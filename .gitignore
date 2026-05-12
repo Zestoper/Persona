@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+venv/
+env/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# 환경변수 (절대 커밋 금지)
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+dist/
+.DS_Store
+
+# 업로드 파일
+backend/static/avatars/*
+!backend/static/avatars/.gitkeep
+
+# 에디터
+.vscode/
+.idea/
+*.swp
