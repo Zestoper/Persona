@@ -23,6 +23,14 @@ class Settings(BaseSettings):
     # ── Groq AI ───────────────────────────────────────────
     GROQ_API_KEY: str  # Groq API 키 (.env에서 읽음)
 
+    # ── 소셜 로그인 ───────────────────────────────────────
+    KAKAO_CLIENT_ID: str = ""
+    KAKAO_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/kakao/callback"
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
+    GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/google/callback"
+    FRONTEND_URL: str = "http://localhost:5173"
+
     class Config:
         # .env 파일 경로 지정 — pydantic이 자동으로 이 파일을 읽어서 위 변수들에 채워줌
         env_file = ".env"

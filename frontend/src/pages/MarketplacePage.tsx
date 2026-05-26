@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { useIsMobile } from '../hooks/useIsMobile'
+import { useThemeColors } from '../hooks/useThemeColors'
+import { useToast } from '../context/ToastContext'
 import PersonaAvatar from '../components/PersonaAvatar'
 
 interface Persona {
@@ -12,40 +14,114 @@ interface Persona {
   speech_style: string | null
   chat_count: number
   avatar_url: string | null
+  tags: string | null
 }
+
+const POPULAR_TAGS = ['친구', '연인', '멘토', '캐릭터', '판타지', '학교', '직장', '힐링']
 
 export default function MarketplacePage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const isMobile = useIsMobile()
+  const c = useThemeColors()
+  const { showToast } = useToast()
+
   const [personas, setPersonas] = useState<Persona[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  const [skip, setSkip] = useState(0)
+  const LIMIT = 20
   const [sort, setSort] = useState<'popular' | 'latest'>('popular')
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
+  const [tagFilter, setTagFilter] = useState('')
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
+  const [favoritedIds, setFavoritedIds] = useState<Set<number>>(new Set())
+  const [favoritePersonas, setFavoritePersonas] = useState<Persona[]>([])
 
+  // 공개 페르소나 목록 로드 (필터 변경 시 초기화)
   useEffect(() => {
     setIsLoading(true)
-    api.get('/personas/public', { params: { sort, search } })
-      .then((res) => setPersonas(res.data))
+    setSkip(0)
+    setHasMore(true)
+    api.get('/personas/public', { params: { sort, search, tag: tagFilter, skip: 0, limit: LIMIT } })
+      .then((res) => {
+        setPersonas(res.data)
+        setHasMore(res.data.length === LIMIT)
+      })
       .finally(() => setIsLoading(false))
-  }, [sort, search])
+  }, [sort, search, tagFilter])
+
+  const handleLoadMore = async () => {
+    const nextSkip = skip + LIMIT
+    setIsLoadingMore(true)
+    try {
+      const res = await api.get('/personas/public', { params: { sort, search, tag: tagFilter, skip: nextSkip, limit: LIMIT } })
+      setPersonas((prev) => [...prev, ...res.data])
+      setSkip(nextSkip)
+      setHasMore(res.data.length === LIMIT)
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }
+
+  // 즐겨찾기 목록 로드 (로그인 시)
+  useEffect(() => {
+    if (!user) { setFavoritedIds(new Set()); return }
+    api.get('/favorites/ids')
+      .then((res) => setFavoritedIds(new Set(res.data.ids)))
+      .catch(() => {})
+    api.get('/favorites')
+      .then((res) => setFavoritePersonas(res.data))
+      .catch(() => {})
+  }, [user])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     setSearch(searchInput)
+    setTagFilter('')
+    setShowFavoritesOnly(false)
+  }
+
+  const handleTagFilter = (tag: string) => {
+    setTagFilter(tag === tagFilter ? '' : tag)
+    setSearch('')
+    setSearchInput('')
+    setShowFavoritesOnly(false)
   }
 
   const handleChat = (personaId: number) => {
-    if (!user) { navigate('/login'); return }
-    navigate(`/chat/${personaId}`)
+    navigate(`/persona/${personaId}`)
   }
 
+  const handleToggleFavorite = async (personaId: number, e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!user) { showToast('로그인이 필요해요', 'info'); navigate('/login'); return }
+    try {
+      const res = await api.post(`/favorites/${personaId}`)
+      if (res.data.is_favorited) {
+        setFavoritedIds((prev) => new Set([...prev, personaId]))
+        const persona = personas.find((p) => p.id === personaId)
+        if (persona) setFavoritePersonas((prev) => [...prev, persona])
+        showToast('즐겨찾기에 추가됐어요', 'success')
+      } else {
+        setFavoritedIds((prev) => { const s = new Set(prev); s.delete(personaId); return s })
+        setFavoritePersonas((prev) => prev.filter((p) => p.id !== personaId))
+        showToast('즐겨찾기에서 제거됐어요', 'info')
+      }
+    } catch {
+      showToast('오류가 발생했어요', 'error')
+    }
+  }
+
+  const displayedPersonas = showFavoritesOnly ? favoritePersonas : personas
+
   return (
-    <div style={{ minHeight: 'calc(100vh - 64px)', background: '#f8f9fc' }}>
+    <div style={{ minHeight: 'calc(100vh - 64px)', background: c.bgPage, transition: 'background 0.2s ease' }}>
 
       {/* 히어로 */}
-      <div style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', padding: isMobile ? '2rem 1rem 1.5rem' : '2.5rem 1.5rem 2rem' }}>
+      <div style={{ background: c.bgHero, padding: isMobile ? '2rem 1rem 1.5rem' : '2.5rem 1.5rem 2rem' }}>
         <div style={{ maxWidth: '1024px', margin: '0 auto' }}>
           <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Marketplace</p>
           <h1 style={{ color: 'white', fontSize: isMobile ? '1.375rem' : '1.875rem', fontWeight: 700, marginBottom: '0.5rem' }}>AI 캐릭터 마켓플레이스</h1>
@@ -73,22 +149,59 @@ export default function MarketplacePage() {
       {/* 콘텐츠 */}
       <div style={{ maxWidth: '1024px', margin: '0 auto', padding: isMobile ? '1.25rem 1rem' : '2rem 1.5rem' }}>
 
-        {/* 정렬 탭 */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+        {/* 태그 필터 */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginBottom: '1rem' }}>
+          {POPULAR_TAGS.map((tag) => (
+            <button
+              key={tag}
+              onClick={() => handleTagFilter(tag)}
+              style={{
+                padding: '0.3rem 0.75rem', borderRadius: '999px', fontSize: '0.8125rem', fontWeight: 600,
+                border: 'none', cursor: 'pointer',
+                background: tagFilter === tag ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : c.bgSoft,
+                color: tagFilter === tag ? 'white' : c.textSecondary,
+              }}
+            >
+              #{tag}
+            </button>
+          ))}
+        </div>
+
+        {/* 정렬 탭 + 즐겨찾기 */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
           <div style={{ display: 'flex', gap: '0.375rem' }}>
             {(['popular', 'latest'] as const).map((s) => (
               <button
                 key={s}
-                onClick={() => setSort(s)}
-                style={{ padding: '0.375rem 0.875rem', borderRadius: '999px', fontSize: '0.8125rem', fontWeight: 600, border: 'none', cursor: 'pointer', background: sort === s ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : '#f3f4f6', color: sort === s ? 'white' : '#6b7280' }}
+                onClick={() => { setSort(s); setShowFavoritesOnly(false) }}
+                style={{
+                  padding: '0.375rem 0.875rem', borderRadius: '999px', fontSize: '0.8125rem', fontWeight: 600,
+                  border: 'none', cursor: 'pointer',
+                  background: sort === s && !showFavoritesOnly ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : c.bgSoft,
+                  color: sort === s && !showFavoritesOnly ? 'white' : c.textSecondary,
+                }}
               >
                 {s === 'popular' ? '인기순' : '최신순'}
               </button>
             ))}
+            {user && (
+              <button
+                onClick={() => setShowFavoritesOnly((p) => !p)}
+                style={{
+                  padding: '0.375rem 0.875rem', borderRadius: '999px', fontSize: '0.8125rem', fontWeight: 600,
+                  border: 'none', cursor: 'pointer',
+                  background: showFavoritesOnly ? '#fef3c7' : c.bgSoft,
+                  color: showFavoritesOnly ? '#d97706' : c.textSecondary,
+                }}
+              >
+                ♥ 즐겨찾기
+              </button>
+            )}
           </div>
           {!isLoading && (
-            <span style={{ fontSize: '0.8125rem', color: '#9ca3af' }}>
-              {search ? `"${search}" 검색 결과 ` : ''}{personas.length}개
+            <span style={{ fontSize: '0.8125rem', color: c.textMuted }}>
+              {tagFilter ? `#${tagFilter} ` : search ? `"${search}" ` : showFavoritesOnly ? '즐겨찾기 ' : ''}
+              {displayedPersonas.length}개
             </span>
           )}
         </div>
@@ -97,21 +210,21 @@ export default function MarketplacePage() {
         {isLoading && (
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
             {[...Array(6)].map((_, i) => (
-              <div key={i} style={{ background: 'white', borderRadius: '16px', padding: '1.25rem', border: '1px solid #f0f0f0', height: '130px' }} />
+              <div key={i} style={{ background: c.bgCard, borderRadius: '16px', padding: '1.25rem', border: `1px solid ${c.border}`, height: '130px' }} />
             ))}
           </div>
         )}
 
         {/* 빈 상태 */}
-        {!isLoading && personas.length === 0 && (
+        {!isLoading && displayedPersonas.length === 0 && (
           <div style={{ textAlign: 'center', padding: '5rem 1rem' }}>
-            <div style={{ width: '64px', height: '64px', background: '#f3f4f6', borderRadius: '50%', margin: '0 auto 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: '1.5rem', color: '#9ca3af' }}>?</span>
+            <div style={{ width: '64px', height: '64px', background: c.bgSoft, borderRadius: '50%', margin: '0 auto 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontSize: '1.5rem', color: c.textMuted }}>{showFavoritesOnly ? '♥' : '?'}</span>
             </div>
-            <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
-              {search ? `"${search}"에 해당하는 캐릭터가 없어요` : '아직 공개된 캐릭터가 없어요'}
+            <p style={{ color: c.textSecondary, marginBottom: '1.5rem' }}>
+              {showFavoritesOnly ? '즐겨찾기한 캐릭터가 없어요' : tagFilter ? `#${tagFilter} 태그의 캐릭터가 없어요` : search ? `"${search}"에 해당하는 캐릭터가 없어요` : '아직 공개된 캐릭터가 없어요'}
             </p>
-            {!search && (
+            {!search && !tagFilter && !showFavoritesOnly && (
               <button
                 onClick={() => navigate('/create')}
                 style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', border: 'none', borderRadius: '12px', padding: '0.75rem 2rem', fontSize: '0.9375rem', fontWeight: 600, cursor: 'pointer' }}
@@ -123,20 +236,51 @@ export default function MarketplacePage() {
         )}
 
         {/* 카드 목록 */}
-        {!isLoading && personas.length > 0 && (
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
-            {personas.map((persona) => (
-              <PersonaCard key={persona.id} persona={persona} onClick={() => handleChat(persona.id)} />
-            ))}
-          </div>
+        {!isLoading && displayedPersonas.length > 0 && (
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+              {displayedPersonas.map((persona) => (
+                <PersonaCard
+                  key={persona.id}
+                  persona={persona}
+                  isFavorited={favoritedIds.has(persona.id)}
+                  onClick={() => handleChat(persona.id)}
+                  onToggleFavorite={(e) => handleToggleFavorite(persona.id, e)}
+                  c={c}
+                />
+              ))}
+            </div>
+
+            {/* 더 보기 버튼 (즐겨찾기 모드 아닐 때만) */}
+            {!showFavoritesOnly && hasMore && (
+              <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                <button
+                  onClick={handleLoadMore}
+                  disabled={isLoadingMore}
+                  style={{ padding: '0.75rem 2.5rem', borderRadius: '12px', border: `1.5px solid ${c.borderStrong}`, background: c.bgCard, color: c.textSecondary, cursor: isLoadingMore ? 'default' : 'pointer', fontSize: '0.9375rem', fontWeight: 600 }}
+                >
+                  {isLoadingMore ? '불러오는 중...' : '더 보기'}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
   )
 }
 
-function PersonaCard({ persona, onClick }: { persona: Persona; onClick: () => void }) {
+function PersonaCard({
+  persona, isFavorited, onClick, onToggleFavorite, c,
+}: {
+  persona: Persona
+  isFavorited: boolean
+  onClick: () => void
+  onToggleFavorite: (e: React.MouseEvent) => void
+  c: ReturnType<typeof useThemeColors>
+}) {
   const [hovered, setHovered] = useState(false)
+  const tags = persona.tags ? persona.tags.split(',').filter(Boolean) : []
 
   return (
     <div
@@ -144,39 +288,66 @@ function PersonaCard({ persona, onClick }: { persona: Persona; onClick: () => vo
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: 'white',
+        background: c.bgCard,
         borderRadius: '16px',
         padding: '1.25rem',
-        border: hovered ? '1.5px solid #c7d2fe' : '1.5px solid #f0f0f0',
-        boxShadow: hovered ? '0 8px 24px rgba(99,102,241,0.10)' : '0 1px 3px rgba(0,0,0,0.04)',
+        border: hovered ? `1.5px solid ${c.borderHover}` : `1.5px solid ${c.border}`,
+        boxShadow: hovered ? c.shadowHover : c.shadowCard,
         cursor: 'pointer',
         transition: 'all 0.18s ease',
         transform: hovered ? 'translateY(-2px)' : 'none',
+        position: 'relative',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+      {/* 즐겨찾기 버튼 */}
+      <button
+        onClick={onToggleFavorite}
+        style={{
+          position: 'absolute', top: '0.75rem', right: '0.75rem',
+          background: 'none', border: 'none', cursor: 'pointer',
+          fontSize: '1rem', color: isFavorited ? '#ef4444' : c.textMuted,
+          padding: '0.25rem', lineHeight: 1,
+          transition: 'color 0.15s, transform 0.15s',
+          transform: isFavorited ? 'scale(1.2)' : 'scale(1)',
+        }}
+      >
+        {isFavorited ? '♥' : '♡'}
+      </button>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem', paddingRight: '1.5rem' }}>
         <PersonaAvatar name={persona.name} avatarUrl={persona.avatar_url} size={42} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h3 style={{ fontWeight: 600, color: hovered ? '#6366f1' : '#111827', fontSize: '0.9375rem', margin: '0 0 0.25rem 0', transition: 'color 0.18s' }}>
+          <h3 style={{ fontWeight: 600, color: hovered ? '#6366f1' : c.textPrimary, fontSize: '0.9375rem', margin: '0 0 0.25rem 0', transition: 'color 0.18s' }}>
             {persona.name}
           </h3>
           {persona.speech_style && (
-            <span style={{ fontSize: '0.6875rem', color: '#6366f1', background: '#eef2ff', padding: '0.125rem 0.5rem', borderRadius: '999px', fontWeight: 500 }}>
+            <span style={{ fontSize: '0.6875rem', color: '#6366f1', background: c.isDark ? '#312e81' : '#eef2ff', padding: '0.125rem 0.5rem', borderRadius: '999px', fontWeight: 500 }}>
               {persona.speech_style}
             </span>
           )}
         </div>
       </div>
 
-      <p style={{ fontSize: '0.875rem', color: '#6b7280', lineHeight: 1.55, margin: '0 0 0.875rem 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+      <p style={{ fontSize: '0.875rem', color: c.textSecondary, lineHeight: 1.55, margin: '0 0 0.75rem 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
         {persona.personality}
       </p>
 
+      {/* 태그 */}
+      {tags.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginBottom: '0.75rem' }}>
+          {tags.slice(0, 3).map((tag) => (
+            <span key={tag} style={{ fontSize: '0.6875rem', color: c.textMuted, background: c.bgSoft, padding: '0.125rem 0.5rem', borderRadius: '999px' }}>
+              #{tag}
+            </span>
+          ))}
+        </div>
+      )}
+
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: '0.75rem', color: '#d1d5db' }}>
+        <span style={{ fontSize: '0.75rem', color: c.textMuted }}>
           대화 {persona.chat_count.toLocaleString()}회
         </span>
-        <span style={{ fontSize: '0.8125rem', color: hovered ? '#6366f1' : '#9ca3af', fontWeight: 600, transition: 'color 0.18s' }}>
+        <span style={{ fontSize: '0.8125rem', color: hovered ? '#6366f1' : c.textMuted, fontWeight: 600, transition: 'color 0.18s' }}>
           대화하기 →
         </span>
       </div>

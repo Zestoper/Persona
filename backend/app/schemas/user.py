@@ -47,6 +47,7 @@ class UserResponse(BaseModel):
     email: str             # 이메일
     nickname: str          # 닉네임
     is_active: bool        # 활성 여부
+    is_admin: bool = False # 관리자 여부
     created_at: datetime   # 가입 일시
 
     class Config:

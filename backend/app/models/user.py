@@ -46,6 +46,13 @@ class User(Base):
         nullable=False,
     )
 
+    is_admin = Column(
+        Boolean,
+        default=False,  # 기본값: 일반 유저
+        nullable=False,
+        server_default="false",
+    )
+
     created_at = Column(
         DateTime(timezone=True),     # 시간대 정보 포함한 날짜+시간
         server_default=func.now(),   # INSERT 시 DB 서버 시간으로 자동 입력
@@ -59,6 +66,7 @@ class User(Base):
     # cascade="all, delete-orphan" : 회원 삭제 시 그 사람의 페르소나도 같이 삭제
 
     conversations = relationship("Conversation", back_populates="user", cascade="all, delete-orphan")
+    favorites = relationship("Favorite", back_populates="user", cascade="all, delete-orphan")
 
     def __repr__(self):
         # 터미널에서 User 객체를 print할 때 보여줄 문자열 (디버깅용)

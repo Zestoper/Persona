@@ -1,6 +1,7 @@
 # ── 임포트 ────────────────────────────────────────────────
-from datetime import datetime, timedelta, timezone  # 날짜/시간 계산용
+from datetime import datetime, timedelta, timezone
 
+from fastapi import Request
 from jose import JWTError, jwt
 # jose  : JWT 토큰을 만들고 검증하는 라이브러리
 # jwt   : JWT 관련 함수 모음
@@ -127,4 +128,19 @@ async def get_current_user(
     if user is None:
         raise credentials_exception   # DB에 없는 유저면 에러 (탈퇴한 회원 등)
 
-    return user  # User 객체 반환 → 엔드포인트에서 current_user로 사용
+    return user
+
+
+async def get_optional_user(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """토큰이 있으면 User 반환, 없거나 유효하지 않으면 None."""
+    auth = request.headers.get("Authorization")
+    if not auth or not auth.startswith("Bearer "):
+        return None
+    token = auth[7:]
+    try:
+        return await get_current_user(token=token, db=db)
+    except Exception:
+        return None

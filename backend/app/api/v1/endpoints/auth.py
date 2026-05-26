@@ -1,15 +1,20 @@
 # ── 임포트 ────────────────────────────────────────────────
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi.responses import RedirectResponse
+import httpx
+import secrets
 # APIRouter : 엔드포인트를 그룹으로 묶는 도구 (미니 앱 같은 것)
 # Depends   : 의존성 주입 — 함수 실행 전에 다른 함수를 먼저 실행시킴
 # status    : HTTP 상태 코드 상수 모음
 
 from sqlalchemy.ext.asyncio import AsyncSession  # 비동기 DB 세션 타입
 
+from sqlalchemy import select
 from app.db.database import get_db               # DB 세션 의존성 함수
 from app.schemas.user import UserCreate, UserLogin, UserResponse, UserUpdate, PasswordUpdate, Token
 from app.services.user_service import create_user, authenticate_user
 from app.core.security import create_access_token, get_current_user, verify_password, hash_password
+from app.core.config import settings
 from app.models.user import User                 # 타입 힌트용
 
 
@@ -113,3 +118,119 @@ async def delete_me(
     current_user: User = Depends(get_current_user),
 ):
     await db.delete(current_user)
+
+
+# ── 소셜 로그인 공통 헬퍼 ────────────────────────────────
+async def get_or_create_social_user(db: AsyncSession, email: str, nickname: str) -> str:
+    """소셜 이메일로 유저 조회 또는 신규 생성 후 JWT 반환."""
+    result = await db.execute(select(User).where(User.email == email))
+    user = result.scalar_one_or_none()
+    if not user:
+        user = User(
+            email=email,
+            password=hash_password(secrets.token_hex(32)),  # 랜덤 비밀번호
+            nickname=nickname,
+            is_active=True,
+        )
+        db.add(user)
+        await db.flush()
+        await db.refresh(user)
+    return create_access_token(data={"sub": str(user.id)})
+
+
+# ── 7. 카카오 로그인 ──────────────────────────────────────
+@router.get("/kakao")
+async def kakao_login():
+    if not settings.KAKAO_CLIENT_ID:
+        raise HTTPException(status_code=503, detail="카카오 로그인이 설정되지 않았습니다.")
+    url = (
+        "https://kauth.kakao.com/oauth/authorize"
+        f"?client_id={settings.KAKAO_CLIENT_ID}"
+        f"&redirect_uri={settings.KAKAO_REDIRECT_URI}"
+        "&response_type=code"
+    )
+    return RedirectResponse(url)
+
+
+@router.get("/kakao/callback")
+async def kakao_callback(code: str, db: AsyncSession = Depends(get_db)):
+    async with httpx.AsyncClient() as client:
+        # 1) code → access_token 교환
+        token_res = await client.post(
+            "https://kauth.kakao.com/oauth/token",
+            data={
+                "grant_type": "authorization_code",
+                "client_id": settings.KAKAO_CLIENT_ID,
+                "redirect_uri": settings.KAKAO_REDIRECT_URI,
+                "code": code,
+            },
+        )
+        token_data = token_res.json()
+        print(f"[KAKAO] token_res status: {token_res.status_code}, data: {token_data}")
+        kakao_token = token_data.get("access_token")
+        if not kakao_token:
+            return RedirectResponse(f"{settings.FRONTEND_URL}/login?error=kakao_failed")
+
+        # 2) access_token → 유저 정보 조회
+        user_res = await client.get(
+            "https://kapi.kakao.com/v2/user/me",
+            headers={"Authorization": f"Bearer {kakao_token}"},
+        )
+        user_data = user_res.json()
+
+    kakao_account = user_data.get("kakao_account", {})
+    email = kakao_account.get("email", f"kakao_{user_data['id']}@persona.app")
+    nickname = user_data.get("properties", {}).get("nickname", "카카오유저")
+
+    jwt = await get_or_create_social_user(db, email, nickname)
+    await db.commit()
+    return RedirectResponse(f"{settings.FRONTEND_URL}/auth/callback?token={jwt}")
+
+
+# ── 8. 구글 로그인 ───────────────────────────────────────
+@router.get("/google")
+async def google_login():
+    if not settings.GOOGLE_CLIENT_ID:
+        raise HTTPException(status_code=503, detail="구글 로그인이 설정되지 않았습니다.")
+    url = (
+        "https://accounts.google.com/o/oauth2/v2/auth"
+        f"?client_id={settings.GOOGLE_CLIENT_ID}"
+        f"&redirect_uri={settings.GOOGLE_REDIRECT_URI}"
+        "&response_type=code"
+        "&scope=openid%20email%20profile"
+    )
+    return RedirectResponse(url)
+
+
+@router.get("/google/callback")
+async def google_callback(code: str, db: AsyncSession = Depends(get_db)):
+    async with httpx.AsyncClient() as client:
+        # 1) code → access_token 교환
+        token_res = await client.post(
+            "https://oauth2.googleapis.com/token",
+            data={
+                "grant_type": "authorization_code",
+                "client_id": settings.GOOGLE_CLIENT_ID,
+                "client_secret": settings.GOOGLE_CLIENT_SECRET,
+                "redirect_uri": settings.GOOGLE_REDIRECT_URI,
+                "code": code,
+            },
+        )
+        token_data = token_res.json()
+        google_token = token_data.get("access_token")
+        if not google_token:
+            return RedirectResponse(f"{settings.FRONTEND_URL}/login?error=google_failed")
+
+        # 2) access_token → 유저 정보 조회
+        user_res = await client.get(
+            "https://www.googleapis.com/oauth2/v2/userinfo",
+            headers={"Authorization": f"Bearer {google_token}"},
+        )
+        user_data = user_res.json()
+
+    email = user_data.get("email", "")
+    nickname = user_data.get("name", "구글유저")
+
+    jwt = await get_or_create_social_user(db, email, nickname)
+    await db.commit()
+    return RedirectResponse(f"{settings.FRONTEND_URL}/auth/callback?token={jwt}")

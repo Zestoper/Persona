@@ -5,6 +5,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import text
 
 # ── 내부 모듈 ─────────────────────────────────────────────
 from app.core.config import settings      # 환경변수 설정 객체
@@ -21,6 +22,12 @@ async def lifespan(app: FastAPI):
     # DB에 테이블이 없으면 자동으로 생성 (개발 편의용 — 실제 운영에선 alembic 사용)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)  # 모든 모델 → DB 테이블 생성
+        # 기존 테이블에 새 컬럼 추가 (없으면 추가, 있으면 무시)
+        for sql in [
+            "ALTER TABLE personas ADD COLUMN IF NOT EXISTS tags VARCHAR(500)",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT FALSE",
+        ]:
+            await conn.execute(text(sql))
     print(f"✅ {settings.APP_NAME} 서버 시작!")
 
     yield  # ← 여기서 앱이 실행됨 (요청을 받기 시작)

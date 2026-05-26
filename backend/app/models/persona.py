@@ -72,9 +72,14 @@ class Persona(Base):
     )
 
     # ── 아바타 이미지 URL ──────────────────────────────────
+    tags = Column(
+        String(500),
+        nullable=True,
+    )
+
     avatar_url = Column(
-        String(500),   # 이미지 URL (나중에 업로드 기능 추가 시 사용)
-        nullable=True, # 없어도 됨 (기본 이미지로 대체)
+        String(500),
+        nullable=True,
     )
 
     # ── 시간 정보 ──────────────────────────────────────────
@@ -93,6 +98,7 @@ class Persona(Base):
 
     conversations = relationship("Conversation", back_populates="persona", cascade="all, delete-orphan")
     reports = relationship("Report", back_populates="persona", cascade="all, delete-orphan")
+    favorites = relationship("Favorite", back_populates="persona", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Persona id={self.id} name={self.name} owner={self.user_id}>"

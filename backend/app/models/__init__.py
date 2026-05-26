@@ -9,6 +9,6 @@ from app.models.persona import Persona
 from app.models.conversation import Conversation
 from app.models.message import Message
 from app.models.report import Report
+from app.models.favorite import Favorite
 
-# 외부에서 `from app.models import User` 형태로 깔끔하게 임포트 가능
-__all__ = ["User", "Persona", "Conversation", "Message", "Report"]
+__all__ = ["User", "Persona", "Conversation", "Message", "Report", "Favorite"]

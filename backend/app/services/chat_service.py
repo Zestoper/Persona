@@ -101,46 +101,61 @@ async def clear_conversation(
 
 
 # ── 핵심: Groq API 스트리밍 호출 ──────────────────────────
-async def stream_ai_response(
-    system_prompt: str,          # 페르소나의 성격/말투가 담긴 지침
-    history: list[Message],      # 지금까지의 대화 내용
-    user_message: str,           # 사용자가 방금 보낸 메시지
-) -> AsyncGenerator[str, None]:
-    """
-    Groq API를 호출해서 AI 답변을 한 글자씩 흘려보내는 함수.
-    비유: 라디오 생방송. 말이 끝날 때까지 기다리지 않고 나오는 대로 바로 전달.
+async def _summarize_old_messages(client: AsyncGroq, messages: list[Message]) -> str:
+    """20개 이상 쌓인 오래된 메시지들을 AI로 요약."""
+    history_text = "\n".join(
+        f"{'사용자' if m.role == 'user' else 'AI'}: {m.content}"
+        for m in messages
+    )
+    response = await client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {"role": "system", "content": "다음 대화 내용을 3-5문장으로 간결하게 한국어로 요약하세요. 핵심 주제와 감정 흐름만 담아주세요."},
+            {"role": "user", "content": history_text},
+        ],
+        max_tokens=300,
+        temperature=0.3,
+    )
+    return response.choices[0].message.content or ""
 
-    AsyncGenerator : 값을 한 번에 다 반환하지 않고, yield로 조금씩 반환하는 함수.
-    """
-    # ── Groq 클라이언트 생성 ───────────────────────────────
+
+async def stream_ai_response(
+    system_prompt: str,
+    history: list[Message],
+    user_message: str,
+) -> AsyncGenerator[str, None]:
     client = AsyncGroq(api_key=settings.GROQ_API_KEY)
 
-    # ── 메시지 목록 조립 ───────────────────────────────────
-    # Groq API는 [system, user, assistant, user, ...] 순서의 리스트를 받음
-    full_system_prompt = system_prompt + "\n- 반드시 한국어(한글)로만 대화하세요. 한자, 중국어, 일본어, 러시아어, 베트남어, 아랍어 등 한글과 영어 이외의 언어는 절대 사용하지 마세요. 영어도 꼭 필요한 경우가 아니면 쓰지 마세요."
+    lang_rule = "\n- 반드시 한국어(한글)로만 대화하세요. 한자, 중국어, 일본어, 러시아어, 베트남어, 아랍어 등 한글과 영어 이외의 언어는 절대 사용하지 마세요. 영어도 꼭 필요한 경우가 아니면 쓰지 마세요."
+    full_system_prompt = system_prompt + lang_rule
 
-    messages = (
-        # 1) system: 페르소나 설정 (항상 맨 앞)
-        [{"role": "system", "content": full_system_prompt}]
-        # 2) 지금까지의 대화 히스토리
-        + [{"role": msg.role, "content": msg.content} for msg in history]
-        # 3) 사용자가 방금 보낸 메시지 (맨 뒤)
-        + [{"role": "user", "content": user_message}]
-    )
+    # 대화가 20개 넘으면 오래된 것들을 요약해서 컨텍스트 압축
+    if len(history) > 20:
+        old_messages = history[:-10]
+        recent_messages = history[-10:]
+        summary = await _summarize_old_messages(client, old_messages)
+        system_with_summary = full_system_prompt + f"\n\n[이전 대화 요약]\n{summary}"
+        messages = (
+            [{"role": "system", "content": system_with_summary}]
+            + [{"role": msg.role, "content": msg.content} for msg in recent_messages]
+            + [{"role": "user", "content": user_message}]
+        )
+    else:
+        messages = (
+            [{"role": "system", "content": full_system_prompt}]
+            + [{"role": msg.role, "content": msg.content} for msg in history]
+            + [{"role": "user", "content": user_message}]
+        )
 
-    # ── Groq API 스트리밍 호출 ─────────────────────────────
-    # stream=True : 답변을 한 번에 받지 않고, 조각조각 흘려받음
     stream = await client.chat.completions.create(
-        model="llama-3.3-70b-versatile",  # 가장 똑똑한 Llama 모델
+        model="llama-3.3-70b-versatile",
         messages=messages,
-        stream=True,                       # 스트리밍 모드 ON
-        max_tokens=1024,                   # 답변 최대 길이 (토큰 = 단어 조각 단위)
-        temperature=0.8,  # 창의성 조절 (0: 딱딱하고 예측가능, 1: 창의적, 2: 랜덤)
+        stream=True,
+        max_tokens=1024,
+        temperature=0.8,
     )
 
-    # ── 스트림에서 글자 꺼내기 ─────────────────────────────
-    # 비유: 수도꼭지에서 물이 조금씩 나오는 것처럼, 글자가 조금씩 나옴
-    async for chunk in stream:            # chunk = 글자 조각 하나
-        delta = chunk.choices[0].delta    # choices[0]: 첫 번째 답변 선택지
-        if delta.content:                 # 글자가 있는 조각만 처리 (빈 조각 무시)
-            yield delta.content           # 글자를 호출한 쪽으로 바로 넘겨줌
+    async for chunk in stream:
+        delta = chunk.choices[0].delta
+        if delta.content:
+            yield delta.content

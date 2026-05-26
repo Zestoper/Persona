@@ -10,6 +10,12 @@ body {
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background-color: #f8f9fc;
   color: #1a1a2e;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+[data-theme="dark"] body {
+  background-color: #0f172a;
+  color: #f1f5f9;
 }
 
 #root {

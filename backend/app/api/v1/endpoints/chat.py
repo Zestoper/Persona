@@ -77,7 +77,9 @@ async def websocket_chat(
         "conversation_id": conversation.id,
         "persona_name": persona.name,
         "persona_avatar": persona.avatar_url,
-        "history": [{"role": m.role, "content": m.content} for m in history],
+        "persona_speech_style": persona.speech_style,
+        "persona_personality": persona.personality,
+        "history": [{"role": m.role, "content": m.content, "created_at": m.created_at.isoformat()} for m in history],
     }))
 
     # ── 대화 루프 시작 ─────────────────────────────────────

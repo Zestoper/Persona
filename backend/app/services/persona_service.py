@@ -63,14 +63,15 @@ async def create_persona(
 
     # ── Persona 객체 생성 ──────────────────────────────────
     new_persona = Persona(
-        user_id=current_user.id,          # 만든 사람
+        user_id=current_user.id,
         name=persona_data.name,
         personality=persona_data.personality,
         background=persona_data.background,
         speech_style=persona_data.speech_style,
-        system_prompt=system_prompt,       # 자동 생성된 프롬프트
+        system_prompt=system_prompt,
         is_public=persona_data.is_public,
         avatar_url=persona_data.avatar_url,
+        tags=persona_data.tags,
     )
 
     db.add(new_persona)          # INSERT 준비
@@ -187,12 +188,42 @@ async def delete_persona(
 
 
 # ── 공개 페르소나 목록 (마켓플레이스) ─────────────────────
+async def fork_persona(
+    db: AsyncSession,
+    persona_id: int,
+    current_user: User,
+) -> Persona:
+    """공개 페르소나를 내 계정으로 복사."""
+    original = await get_persona_by_id(db, persona_id, current_user=None)
+    if not original.is_public:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="공개 페르소나만 복사할 수 있습니다.",
+        )
+    new_persona = Persona(
+        user_id=current_user.id,
+        name=f"{original.name} (복사)",
+        personality=original.personality,
+        background=original.background,
+        speech_style=original.speech_style,
+        system_prompt=original.system_prompt,
+        is_public=False,
+        avatar_url=original.avatar_url,
+        tags=original.tags,
+    )
+    db.add(new_persona)
+    await db.flush()
+    await db.refresh(new_persona)
+    return new_persona
+
+
 async def get_public_personas(
     db: AsyncSession,
     skip: int = 0,
     limit: int = 20,
     sort: str = "popular",  # "popular" | "latest"
     search: str = "",
+    tag: str = "",          # 태그 필터
 ) -> list[Persona]:
 
     order = desc(Persona.created_at) if sort == "latest" else desc(Persona.chat_count)
@@ -200,6 +231,9 @@ async def get_public_personas(
     query = select(Persona).where(Persona.is_public == True)  # noqa: E712
     if search.strip():
         query = query.where(Persona.name.ilike(f"%{search.strip()}%"))
+    if tag.strip():
+        # tags 컬럼에 해당 태그가 포함되는지 확인 (예: "친구,힐링" 에서 "친구" 검색)
+        query = query.where(Persona.tags.ilike(f"%{tag.strip()}%"))
 
     result = await db.execute(query.order_by(order).offset(skip).limit(limit))
     return list(result.scalars().all())

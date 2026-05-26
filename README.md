@@ -4,13 +4,19 @@
 
 ## 주요 기능
 
-- **페르소나 생성** — 이름, 성격, 배경스토리, 말투를 입력하면 AI 시스템 프롬프트 자동 생성
-- **실시간 스트리밍 채팅** — WebSocket 기반으로 AI 답변을 타이핑하듯 실시간 출력
-- **대화 기록 유지** — 페이지 새로고침 후에도 이전 대화가 그대로 유지
-- **마켓플레이스** — 공개 페르소나 탐색, 인기순/최신순 정렬, 이름 검색
-- **아바타 시스템** — DiceBear 자동 생성 (7가지 스타일) 또는 직접 이미지 업로드
-- **계정 관리** — 회원가입/로그인, 닉네임·비밀번호 변경, 회원탈퇴
-- **모바일 반응형** — 모든 페이지 모바일 최적화
+| 기능 | 설명 |
+|---|---|
+| 페르소나 생성 | 이름·성격·배경스토리·말투를 입력하면 AI 시스템 프롬프트 자동 생성 |
+| 실시간 스트리밍 채팅 | WebSocket 기반으로 AI 답변을 타이핑하듯 실시간 출력 |
+| 대화 기록 유지 | 페이지 새로고침 후에도 이전 대화가 그대로 유지 |
+| 마켓플레이스 | 공개 페르소나 탐색, 인기순/최신순 정렬, 이름 검색 |
+| 페르소나 복사 | 공개 페르소나를 내 계정으로 포크(복사)하여 커스터마이징 |
+| 소셜 로그인 | 카카오·구글 OAuth2 소셜 로그인 지원 |
+| 아바타 시스템 | DiceBear 자동 생성 (7가지 스타일) 또는 직접 이미지 업로드 |
+| 신고 기능 | 부적절한 페르소나 신고 및 관리자 처리 |
+| 관리자 페이지 | 통계 대시보드·신고 관리·유저 관리·페르소나 관리 |
+| 다크/라이트 모드 | 시스템 설정 연동 + 수동 전환 |
+| 모바일 반응형 | 햄버거 메뉴, 슬라이드 드로어 등 모바일 최적화 |
 
 ## 기술 스택
 
@@ -19,9 +25,10 @@
 |---|---|
 | 프레임워크 | FastAPI |
 | 데이터베이스 | PostgreSQL + SQLAlchemy (async) |
-| 인증 | JWT (python-jose) + bcrypt |
+| 인증 | JWT (python-jose) + bcrypt + OAuth2 (카카오·구글) |
 | AI | Groq API (llama-3.3-70b-versatile) |
 | 실시간 통신 | WebSocket |
+| HTTP 클라이언트 | httpx (소셜 로그인 토큰 교환) |
 
 ### Frontend
 | 항목 | 기술 |
@@ -30,14 +37,52 @@
 | 빌드 도구 | Vite |
 | 라우팅 | React Router v6 |
 | HTTP 클라이언트 | Axios |
+| 스타일 | Inline CSS + Tailwind CSS |
 | 아바타 | DiceBear API |
+
+## 화면 구성
+
+| 경로 | 설명 |
+|---|---|
+| `/` | 랜딩 페이지 (서비스 소개, 데모 애니메이션) |
+| `/marketplace` | 마켓플레이스 (공개 페르소나 탐색) |
+| `/persona/:id` | 페르소나 상세 (소개·신고·복사) |
+| `/create` | 페르소나 만들기 |
+| `/my` | 내 페르소나 목록 |
+| `/edit/:id` | 페르소나 수정 |
+| `/chat/:id` | 페르소나와 채팅 |
+| `/conversations` | 내 대화 목록 |
+| `/profile` | 마이페이지 (계정 설정) |
+| `/pricing` | 요금제 페이지 |
+| `/admin` | 관리자 페이지 (관리자 계정 전용) |
+
+## 프로젝트 구조
+
+```
+Persona/
+├── backend/
+│   ├── app/
+│   │   ├── api/v1/endpoints/   # auth, personas, chat, reports, conversations, admin
+│   │   ├── models/             # User, Persona, Message, Conversation, Report, Favorite
+│   │   ├── schemas/            # Pydantic 스키마
+│   │   ├── services/           # 비즈니스 로직
+│   │   └── core/               # 설정, 보안, JWT
+│   └── requirements.txt
+└── frontend/
+    └── src/
+        ├── pages/              # 페이지 컴포넌트 (12개)
+        ├── components/         # Navbar, PersonaAvatar 등 공통 컴포넌트
+        ├── context/            # AuthContext, ToastContext, ThemeContext
+        ├── hooks/              # useThemeColors, useIsMobile
+        └── api/                # Axios 클라이언트
+```
 
 ## 실행 방법
 
 ### 사전 준비
 - Python 3.11+
 - Node.js 18+
-- PostgreSQL
+- PostgreSQL (또는 Docker)
 
 ### 백엔드
 
@@ -53,7 +98,7 @@ pip install -r requirements.txt
 
 # 환경변수 설정
 cp .env.example .env
-# .env 파일을 열어 아래 값들을 채워주세요
+# .env 파일을 열어 값 입력
 
 # 서버 실행
 uvicorn app.main:app --reload
@@ -63,11 +108,7 @@ uvicorn app.main:app --reload
 
 ```bash
 cd frontend
-
-# 패키지 설치
 npm install
-
-# 개발 서버 실행
 npm run dev
 ```
 
@@ -76,41 +117,37 @@ npm run dev
 ### 환경변수 (.env)
 
 ```env
-DATABASE_URL=postgresql+asyncpg://유저:비밀번호@localhost:5432/persona
+DATABASE_URL=postgresql+asyncpg://유저:비밀번호@localhost:5432/persona_db
 SECRET_KEY=랜덤한_시크릿_키_32자_이상
+ACCESS_TOKEN_EXPIRE_MINUTES=30
 GROQ_API_KEY=gsk_로_시작하는_Groq_API_키
 DEBUG=True
+
+# 소셜 로그인 (선택)
+KAKAO_CLIENT_ID=카카오_REST_API_키
+KAKAO_REDIRECT_URI=http://localhost:8000/api/v1/auth/kakao/callback
+GOOGLE_CLIENT_ID=구글_클라이언트_ID
+GOOGLE_CLIENT_SECRET=구글_클라이언트_시크릿
 ```
 
-> **Groq API 키 발급**: [console.groq.com](https://console.groq.com) → 무료 회원가입 후 발급
+> **Groq API 키**: [console.groq.com](https://console.groq.com) → 무료 회원가입 후 발급  
+> **카카오 로그인**: [developers.kakao.com](https://developers.kakao.com) → 앱 생성 → REST API 키  
+> **구글 로그인**: [console.cloud.google.com](https://console.cloud.google.com) → OAuth 2.0 클라이언트 ID
 
-## 프로젝트 구조
+### Docker로 PostgreSQL 실행
 
-```
-Persona/
-├── backend/
-│   ├── app/
-│   │   ├── api/v1/endpoints/   # 라우터 (auth, personas, chat)
-│   │   ├── models/             # SQLAlchemy 모델
-│   │   ├── schemas/            # Pydantic 스키마
-│   │   ├── services/           # 비즈니스 로직
-│   │   └── core/               # 설정, 보안
-│   └── requirements.txt
-└── frontend/
-    └── src/
-        ├── pages/              # 페이지 컴포넌트
-        ├── components/         # 공통 컴포넌트
-        ├── context/            # 전역 상태 (Auth, Toast)
-        ├── hooks/              # 커스텀 훅
-        └── api/                # Axios 클라이언트
+```bash
+docker run -d \
+  --name persona-postgres \
+  -e POSTGRES_PASSWORD=password \
+  -e POSTGRES_DB=persona_db \
+  -p 5432:5432 \
+  postgres:15
 ```
 
-## 화면 구성
+### 관리자 계정 설정
 
-| 경로 | 설명 |
-|---|---|
-| `/` | 마켓플레이스 (공개 페르소나 탐색) |
-| `/create` | 페르소나 만들기 |
-| `/my` | 내 페르소나 목록 |
-| `/chat/:id` | 페르소나와 채팅 |
-| `/profile` | 마이페이지 (계정 설정) |
+```bash
+docker exec -it persona-postgres psql -U postgres -d persona_db \
+  -c "UPDATE users SET is_admin = true WHERE email = '이메일주소';"
+```
