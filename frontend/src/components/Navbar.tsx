@@ -64,6 +64,7 @@ export default function Navbar() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.125rem', flex: 1, paddingLeft: '1.5rem' }}>
                 {user && <Link to="/marketplace" style={navLink('/marketplace')}>마켓</Link>}
                 {user && <Link to="/my" style={navLink('/my')}>내 페르소나</Link>}
+                {user && <Link to="/favorites" style={navLink('/favorites')}>즐겨찾기</Link>}
                 {user && <Link to="/conversations" style={navLink('/conversations')}>대화 목록</Link>}
                 <Link to="/pricing" style={navLink('/pricing')}>요금제</Link>
               </div>
@@ -168,6 +169,7 @@ export default function Navbar() {
 
               <MenuLink to="/marketplace" label="마켓플레이스" icon="🛍️" c={c} active={isActive('/marketplace')} />
               {user && <MenuLink to="/my" label="내 페르소나" icon="🤖" c={c} active={isActive('/my')} />}
+              {user && <MenuLink to="/favorites" label="즐겨찾기" icon="♥" c={c} active={isActive('/favorites')} />}
               {user && <MenuLink to="/conversations" label="대화 목록" icon="💬" c={c} active={isActive('/conversations')} />}
               <MenuLink to="/pricing" label="요금제" icon="💎" c={c} active={isActive('/pricing')} />
 

@@ -17,6 +17,7 @@ import ConversationsPage from './pages/ConversationsPage'
 import AdminPage from './pages/AdminPage'
 import PricingPage from './pages/PricingPage'
 import AuthCallbackPage from './pages/AuthCallbackPage'
+import FavoritesPage from './pages/FavoritesPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 function HomeRoute() {
@@ -52,6 +53,7 @@ function AppRoutes() {
         <Route path="/chat/:personaId" element={<PrivateRoute><ChatPage /></PrivateRoute>} />
         <Route path="/persona/:personaId" element={<PersonaDetailPage />} />
         <Route path="/conversations" element={<PrivateRoute><ConversationsPage /></PrivateRoute>} />
+        <Route path="/favorites" element={<PrivateRoute><FavoritesPage /></PrivateRoute>} />
         <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
         <Route path="/admin" element={<PrivateRoute><AdminPage /></PrivateRoute>} />
         <Route path="/pricing" element={<PricingPage />} />
