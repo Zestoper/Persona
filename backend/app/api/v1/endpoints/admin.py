@@ -130,6 +130,23 @@ async def get_users(
     return items
 
 
+@router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(
+    user_id: int,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(require_admin),
+):
+    """유저 계정 강제 삭제."""
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="유저를 찾을 수 없습니다.")
+    if user.id == admin.id:
+        raise HTTPException(status_code=400, detail="본인 계정은 삭제할 수 없습니다.")
+    await db.delete(user)
+    await db.flush()
+
+
 @router.put("/users/{user_id}/toggle-active")
 async def toggle_user_active(
     user_id: int,

@@ -119,6 +119,15 @@ export default function AdminPage() {
     } catch { showToast('처리에 실패했어요', 'error') }
   }
 
+  const handleDeleteUser = async (userId: number, nickname: string) => {
+    if (!confirm(`"${nickname}" 계정을 삭제할까요? 해당 유저의 페르소나와 대화 기록도 모두 삭제됩니다.`)) return
+    try {
+      await api.delete(`/admin/users/${userId}`)
+      setUsers((prev) => prev.filter((u) => u.id !== userId))
+      showToast('계정이 삭제됐어요', 'success')
+    } catch { showToast('삭제에 실패했어요', 'error') }
+  }
+
   const handleDeletePersona = async (personaId: number, name: string) => {
     if (!confirm(`"${name}" 페르소나를 강제 삭제할까요? 관련 대화도 모두 삭제됩니다.`)) return
     try {
@@ -280,12 +289,20 @@ export default function AdminPage() {
                       <p style={{ fontSize: '0.8125rem', color: c.textMuted, margin: 0 }}>{u.email} · 페르소나 {u.persona_count}개 · {new Date(u.created_at).toLocaleDateString('ko-KR')} 가입</p>
                     </div>
                     {!u.is_admin && (
-                      <button
-                        onClick={() => handleToggleUser(u.id)}
-                        style={actionBtn(u.is_active ? '#dc2626' : '#059669', u.is_active ? '#fee2e2' : '#d1fae5')}
-                      >
-                        {u.is_active ? '비활성화' : '활성화'}
-                      </button>
+                      <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+                        <button
+                          onClick={() => handleToggleUser(u.id)}
+                          style={actionBtn(u.is_active ? '#d97706' : '#059669', u.is_active ? '#fef3c7' : '#d1fae5')}
+                        >
+                          {u.is_active ? '비활성화' : '활성화'}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUser(u.id, u.nickname)}
+                          style={actionBtn('#dc2626', '#fee2e2')}
+                        >
+                          삭제
+                        </button>
+                      </div>
                     )}
                   </div>
                 ))}
