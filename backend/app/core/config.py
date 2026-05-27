@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: str = ""
     GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/google/callback"
     FRONTEND_URL: str = "http://localhost:5173"
+    ALLOWED_ORIGINS: str = "http://localhost:5173"  # 쉼표로 여러 도메인 구분
 
     class Config:
         # .env 파일 경로 지정 — pydantic이 자동으로 이 파일을 읽어서 위 변수들에 채워줌

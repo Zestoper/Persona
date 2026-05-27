@@ -52,12 +52,13 @@ app = FastAPI(
 # ── CORS 미들웨어 설정 ─────────────────────────────────────
 # CORS: 브라우저가 다른 도메인의 API를 호출할 때 막는 보안 정책
 # 비유: 우리 프론트(localhost:3000)가 백엔드(localhost:8000)에 편지 보낼 수 있게 허용
+_origins = [o.strip() for o in settings.ALLOWED_ORIGINS.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,   # 쿠키/인증 헤더 포함 요청 허용
-    allow_methods=["*"],      # GET, POST, PUT, DELETE 등 모든 HTTP 메서드 허용
-    allow_headers=["*"],      # Authorization 등 모든 요청 헤더 허용
+    allow_origins=_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

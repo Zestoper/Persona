@@ -93,6 +93,7 @@ async def update_me(
     current_user: User = Depends(get_current_user),
 ):
     current_user.nickname = update_data.nickname
+    await db.flush()
     return current_user
 
 
@@ -105,9 +106,9 @@ async def update_password(
     current_user: User = Depends(get_current_user),
 ):
     if not verify_password(update_data.current_password, current_user.password):
-        from fastapi import HTTPException
         raise HTTPException(status_code=400, detail="현재 비밀번호가 올바르지 않습니다.")
     current_user.password = hash_password(update_data.new_password)
+    await db.flush()
 
 
 # ── 6. 회원탈퇴 ──────────────────────────────────────────
@@ -118,6 +119,7 @@ async def delete_me(
     current_user: User = Depends(get_current_user),
 ):
     await db.delete(current_user)
+    await db.flush()
 
 
 # ── 소셜 로그인 공통 헬퍼 ────────────────────────────────
@@ -166,7 +168,6 @@ async def kakao_callback(code: str, db: AsyncSession = Depends(get_db)):
             },
         )
         token_data = token_res.json()
-        print(f"[KAKAO] token_res status: {token_res.status_code}, data: {token_data}")
         kakao_token = token_data.get("access_token")
         if not kakao_token:
             return RedirectResponse(f"{settings.FRONTEND_URL}/login?error=kakao_failed")
