@@ -139,7 +139,7 @@ export default function AdminPage() {
     })
   }
 
-  const handleTogglePublic = async (personaId: number, isPublic: boolean) => {
+  const handleTogglePublic = async (personaId: number) => {
     try {
       const res = await api.put(`/admin/personas/${personaId}/toggle-public`)
       setPersonas((prev) => prev.map((p) => p.id === personaId ? { ...p, is_public: res.data.is_public } : p))
@@ -408,7 +408,7 @@ export default function AdminPage() {
                         보기
                       </button>
                       <button
-                        onClick={() => handleTogglePublic(p.id, p.is_public)}
+                        onClick={() => handleTogglePublic(p.id)}
                         style={actionBtn(p.is_public ? '#d97706' : '#059669', p.is_public ? '#fef3c7' : '#d1fae5')}
                       >
                         {p.is_public ? '비공개' : '공개'}

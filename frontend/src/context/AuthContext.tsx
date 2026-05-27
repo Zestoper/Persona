@@ -1,7 +1,8 @@
 // ── 인증 전역 상태 관리 ────────────────────────────────────
 // 비유: 앱 전체에서 쓸 수 있는 '로그인 여부' 전광판.
 //       어느 페이지에서도 "지금 로그인 되어있나?" 를 바로 확인 가능.
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
+import type { ReactNode } from 'react'
 import api from '../api/client'
 
 // ── 타입 정의 ─────────────────────────────────────────────

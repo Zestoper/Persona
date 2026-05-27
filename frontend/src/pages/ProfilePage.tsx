@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useThemeColors } from '../hooks/useThemeColors'
@@ -8,7 +7,6 @@ import ConfirmModal from '../components/ConfirmModal'
 
 export default function ProfilePage() {
   const { user, logout, updateUser } = useAuth()
-  const navigate = useNavigate()
   const isMobile = useIsMobile()
   const c = useThemeColors()
 
