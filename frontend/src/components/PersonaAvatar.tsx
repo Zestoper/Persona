@@ -23,7 +23,7 @@ export default function PersonaAvatar({ name, avatarUrl, size = 44, radius = '12
 
   if (avatarUrl) {
     // DiceBear 같은 외부 URL은 그대로, /static/... 같은 내부 경로는 백엔드 주소 붙이기
-    const src = avatarUrl.startsWith('http') ? avatarUrl : `http://localhost:8000${avatarUrl}`
+    const src = avatarUrl.startsWith('http') ? avatarUrl : `${import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:8000'}${avatarUrl}`
     return (
       <img
         src={src}

@@ -4,7 +4,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api/v1', // 모든 요청 앞에 자동으로 붙는 주소
+  baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/v1',
   headers: {
     'Content-Type': 'application/json',    // JSON 형식으로 데이터를 보냄
   },

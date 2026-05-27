@@ -59,7 +59,7 @@ export default function ChatPage() {
     const token = localStorage.getItem('token')
     if (!token) { navigate('/login'); return }
 
-    const ws = new WebSocket(`ws://localhost:8000/api/v1/chat/${personaId}?token=${token}`)
+    const ws = new WebSocket(`${import.meta.env.VITE_WS_URL ?? 'ws://localhost:8000/api/v1'}/chat/${personaId}?token=${token}`)
     wsRef.current = ws
 
     ws.onopen = () => setIsConnected(true)
