@@ -12,9 +12,11 @@ from app.core.config import settings        # 위에서 만든 설정 객체
 # 비유: 엔진 = 데이터베이스로 가는 '도로'. 한 번 만들어두면 계속 재사용.
 engine = create_async_engine(
     settings.ASYNC_DATABASE_URL,  # asyncpg 호환 형식으로 자동 변환
-    echo=settings.DEBUG,    # DEBUG=True면 실행되는 SQL을 터미널에 출력 (개발 시 유용)
-    pool_size=10,           # 동시에 유지할 DB 연결 수 (식당의 테이블 수)
-    max_overflow=20,        # pool_size 초과 시 임시로 더 열 수 있는 연결 수
+    echo=settings.DEBUG,
+    pool_size=2,
+    max_overflow=3,
+    pool_timeout=30,
+    pool_recycle=300,  # 5분마다 연결 재사용 (Neon 유휴 연결 끊김 방지)
 )
 
 # ── 비동기 세션 팩토리 생성 ────────────────────────────────
