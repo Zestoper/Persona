@@ -36,6 +36,7 @@ export default function ChatPage() {
   const { showToast } = useToast()
   const wsRef = useRef<WebSocket | null>(null)
   const intentionalCloseRef = useRef(false)
+  const wasConnectedRef = useRef(false)
   const scrollAreaRef = useRef<HTMLDivElement | null>(null)
   const bottomRef = useRef<HTMLDivElement | null>(null)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
@@ -72,6 +73,7 @@ export default function ChatPage() {
       const data = JSON.parse(event.data)
 
       if (data.type === 'connected') {
+        wasConnectedRef.current = true
         setPersonaName(data.persona_name)
         setPersonaAvatar(data.persona_avatar ?? null)
         setPersonaSpeechStyle(data.persona_speech_style ?? null)
@@ -121,7 +123,13 @@ export default function ChatPage() {
     ws.onclose = () => {
       setIsConnected(false)
       if (!intentionalCloseRef.current) {
-        setIsDisconnected(true)
+        if (!wasConnectedRef.current) {
+          // 연결 이벤트 없이 닫힘 = 접근 거부 (비공개 페르소나 등)
+          showToast('비공개 처리된 페르소나입니다', 'error')
+          navigate(-1)
+        } else {
+          setIsDisconnected(true)
+        }
       }
     }
     return () => {

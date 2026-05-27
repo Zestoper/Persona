@@ -1,3 +1,4 @@
+import re
 # ── 임포트 ────────────────────────────────────────────────
 from groq import AsyncGroq                   # Groq 비동기 클라이언트
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,6 +11,24 @@ from app.models.message import Message
 from app.models.persona import Persona
 from app.models.user import User
 
+# 한자·일본어·러시아어 등 비허용 문자 제거 (한글·영어·공백·기호만 허용)
+# \uXXXX 이스케이프로 작성해 파일 인코딩 이슈 방지
+_FOREIGN_RE = re.compile(
+    "[一-鿿"    # CJK Unified Ideographs (한자 기본)
+    "㐀-䶿"     # CJK Extension A
+    " 0-⩭F"   # CJK Extension B (surrogate pair range — skipped by re on narrow builds)
+    "぀-ゟ"     # Hiragana (히라가나)
+    "゠-ヿ"     # Katakana (가타카나)
+    "Ѐ-ӿ"     # Cyrillic (러시아어)
+    "؀-ۿ"     # Arabic (아랍어)
+    "　-〿"     # CJK Symbols and Punctuation
+    "豈-﫿"     # CJK Compatibility Ideographs
+    "]+"
+)
+
+def _strip_foreign_scripts(text: str) -> str:
+    return _FOREIGN_RE.sub("", text)
+
 
 # ── 대화방 가져오기 (없으면 새로 생성) ────────────────────
 async def get_or_create_conversation(
@@ -18,7 +37,6 @@ async def get_or_create_conversation(
     persona_id: int,
 ) -> Conversation:
     """
-    
     유저 + 페르소나 조합의 대화방을 찾고, 없으면 새로 만들어 반환.
     비유: 카카오톡에서 친구 프로필 누르면 기존 채팅방 열리고,
           처음이면 새 채팅방이 열리는 것.
@@ -164,4 +182,4 @@ async def stream_ai_response(
     async for chunk in stream:
         delta = chunk.choices[0].delta
         if delta.content:
-            yield delta.content
+            yield _strip_foreign_scripts(delta.content)
