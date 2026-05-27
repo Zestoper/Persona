@@ -153,7 +153,7 @@ export default function PersonaDetailPage() {
               )}
               <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.8125rem', margin: 0 }}>
                 대화 {persona.chat_count.toLocaleString()}회
-                {persona.creator_nickname && !isOwner && (
+                {persona.creator_nickname && (
                   <span style={{ marginLeft: '0.75rem' }}>· by {persona.creator_nickname}</span>
                 )}
               </p>
