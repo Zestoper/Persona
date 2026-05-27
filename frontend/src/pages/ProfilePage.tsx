@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useThemeColors } from '../hooks/useThemeColors'
+import { useToast } from '../context/ToastContext'
 import api from '../api/client'
 import ConfirmModal from '../components/ConfirmModal'
 
 export default function ProfilePage() {
   const { user, logout, updateUser } = useAuth()
+  const { showToast } = useToast()
   const isMobile = useIsMobile()
   const c = useThemeColors()
 
@@ -74,7 +76,7 @@ export default function ProfilePage() {
         subMessage="모든 페르소나와 대화 기록이 삭제되며 되돌릴 수 없어요."
         confirmLabel="탈퇴하기"
         danger
-        onConfirm={async () => { await api.delete('/auth/me'); logout() }}
+        onConfirm={async () => { await api.delete('/auth/me'); showToast('탈퇴가 완료됐어요. 이용해주셔서 감사해요.', 'info'); logout() }}
         onCancel={() => setShowDeleteConfirm(false)}
       />
     )}
@@ -163,7 +165,7 @@ export default function ProfilePage() {
               <p style={{ color: c.textMuted, fontSize: '0.8125rem', margin: '0.25rem 0 0 0' }}>다른 계정으로 로그인하려면 로그아웃하세요</p>
             </div>
             <button
-              onClick={logout}
+              onClick={() => { showToast('로그아웃됐어요', 'info'); logout() }}
               style={{ fontSize: '0.875rem', color: c.textSecondary, padding: '0.5rem 1rem', border: `1.5px solid ${c.borderStrong}`, borderRadius: '10px', background: c.bgCard, cursor: 'pointer', whiteSpace: 'nowrap' }}
             >
               로그아웃
