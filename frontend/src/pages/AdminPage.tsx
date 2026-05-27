@@ -73,6 +73,8 @@ export default function AdminPage() {
   const [personas, setPersonas] = useState<AdminPersona[]>([])
   const [reports, setReports] = useState<AdminReport[]>([])
   const [reportFilter, setReportFilter] = useState('')
+  const [userSearch, setUserSearch] = useState('')
+  const [personaSearch, setPersonaSearch] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [confirmState, setConfirmState] = useState<{ message: string; subMessage: string; onConfirm: () => void } | null>(null)
 
@@ -135,6 +137,14 @@ export default function AdminPage() {
         setConfirmState(null)
       },
     })
+  }
+
+  const handleTogglePublic = async (personaId: number, isPublic: boolean) => {
+    try {
+      const res = await api.put(`/admin/personas/${personaId}/toggle-public`)
+      setPersonas((prev) => prev.map((p) => p.id === personaId ? { ...p, is_public: res.data.is_public } : p))
+      showToast(res.data.is_public ? '공개로 전환됐어요' : '비공개로 전환됐어요', 'success')
+    } catch { showToast('처리에 실패했어요', 'error') }
   }
 
   const handleDeletePersona = (personaId: number, name: string) => {
@@ -284,12 +294,15 @@ export default function AdminPage() {
                               {new Date(r.created_at).toLocaleString('ko-KR')}
                             </p>
                           </div>
-                          {r.status === 'pending' && (
-                            <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
-                              <button onClick={() => handleUpdateReport(r.id, 'resolved')} style={actionBtn('#059669', '#d1fae5')}>처리</button>
-                              <button onClick={() => handleUpdateReport(r.id, 'rejected')} style={actionBtn('#6b7280', c.bgSoft)}>기각</button>
-                            </div>
-                          )}
+                          <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+                            <button onClick={() => navigate(`/persona/${r.persona_id}`)} style={actionBtn('#4f46e5', '#ede9fe')}>보기</button>
+                            {r.status === 'pending' && (
+                              <>
+                                <button onClick={() => handleUpdateReport(r.id, 'resolved')} style={actionBtn('#059669', '#d1fae5')}>처리</button>
+                                <button onClick={() => handleUpdateReport(r.id, 'rejected')} style={actionBtn('#6b7280', c.bgSoft)}>기각</button>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                     )
@@ -302,11 +315,25 @@ export default function AdminPage() {
 
         {/* 유저 탭 */}
         {!isLoading && tab === 'users' && (
-          users.length === 0
-            ? <EmptyState icon="👤" text="유저가 없어요" c={c} />
-            : (
+          <>
+            <input
+              type="text"
+              value={userSearch}
+              onChange={(e) => setUserSearch(e.target.value)}
+              placeholder="닉네임 또는 이메일 검색..."
+              style={{ width: '100%', padding: '0.625rem 1rem', borderRadius: '10px', border: `1.5px solid ${c.borderStrong}`, background: c.bgInput, color: c.textPrimary, fontSize: '0.9375rem', outline: 'none', marginBottom: '1rem', boxSizing: 'border-box' }}
+            />
+            {users.filter((u) => {
+              const q = userSearch.toLowerCase()
+              return !q || u.nickname.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+            }).length === 0
+              ? <EmptyState icon="👤" text="유저가 없어요" c={c} />
+              : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
-                {users.map((u) => (
+                {users.filter((u) => {
+                  const q = userSearch.toLowerCase()
+                  return !q || u.nickname.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+                }).map((u) => (
                   <div key={u.id} style={{ background: c.bgCard, borderRadius: '16px', padding: '1rem 1.25rem', border: `1px solid ${c.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
@@ -335,16 +362,31 @@ export default function AdminPage() {
                   </div>
                 ))}
               </div>
-            )
+            )}
+          </>
         )}
 
         {/* 페르소나 탭 */}
         {!isLoading && tab === 'personas' && (
-          personas.length === 0
-            ? <EmptyState icon="🤖" text="페르소나가 없어요" c={c} />
-            : (
+          <>
+            <input
+              type="text"
+              value={personaSearch}
+              onChange={(e) => setPersonaSearch(e.target.value)}
+              placeholder="페르소나 이름 또는 작성자 검색..."
+              style={{ width: '100%', padding: '0.625rem 1rem', borderRadius: '10px', border: `1.5px solid ${c.borderStrong}`, background: c.bgInput, color: c.textPrimary, fontSize: '0.9375rem', outline: 'none', marginBottom: '1rem', boxSizing: 'border-box' }}
+            />
+            {personas.filter((p) => {
+              const q = personaSearch.toLowerCase()
+              return !q || p.name.toLowerCase().includes(q) || p.user_nickname.toLowerCase().includes(q)
+            }).length === 0
+              ? <EmptyState icon="🤖" text="페르소나가 없어요" c={c} />
+              : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
-                {personas.map((p) => (
+                {personas.filter((p) => {
+                  const q = personaSearch.toLowerCase()
+                  return !q || p.name.toLowerCase().includes(q) || p.user_nickname.toLowerCase().includes(q)
+                }).map((p) => (
                   <div key={p.id} style={{ background: c.bgCard, borderRadius: '16px', padding: '1rem 1.25rem', border: `1px solid ${c.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
@@ -366,6 +408,12 @@ export default function AdminPage() {
                         보기
                       </button>
                       <button
+                        onClick={() => handleTogglePublic(p.id, p.is_public)}
+                        style={actionBtn(p.is_public ? '#d97706' : '#059669', p.is_public ? '#fef3c7' : '#d1fae5')}
+                      >
+                        {p.is_public ? '비공개' : '공개'}
+                      </button>
+                      <button
                         onClick={() => handleDeletePersona(p.id, p.name)}
                         style={actionBtn('#dc2626', '#fee2e2')}
                       >
@@ -375,7 +423,8 @@ export default function AdminPage() {
                   </div>
                 ))}
               </div>
-            )
+            )}
+          </>
         )}
       </div>
     </div>

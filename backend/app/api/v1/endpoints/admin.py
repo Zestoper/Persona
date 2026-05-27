@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, desc
+from sqlalchemy import select, func, desc, outerjoin
 from pydantic import BaseModel
 from datetime import datetime
 
@@ -111,23 +111,27 @@ async def get_users(
     db: AsyncSession = Depends(get_db),
     _: User = Depends(require_admin),
 ):
-    result = await db.execute(
-        select(User).order_by(desc(User.created_at)).offset(skip).limit(limit)
+    # 페르소나 수를 서브쿼리로 한 번에 집계 (N+1 → 1 쿼리)
+    persona_count_sq = (
+        select(Persona.user_id, func.count(Persona.id).label("cnt"))
+        .group_by(Persona.user_id)
+        .subquery()
     )
-    users = result.scalars().all()
+    rows = (await db.execute(
+        select(User, func.coalesce(persona_count_sq.c.cnt, 0).label("persona_count"))
+        .outerjoin(persona_count_sq, User.id == persona_count_sq.c.user_id)
+        .order_by(desc(User.created_at))
+        .offset(skip).limit(limit)
+    )).all()
 
-    items = []
-    for u in users:
-        count_result = await db.execute(
-            select(func.count(Persona.id)).where(Persona.user_id == u.id)
-        )
-        persona_count = count_result.scalar() or 0
-        items.append(AdminUserItem(
+    return [
+        AdminUserItem(
             id=u.id, email=u.email, nickname=u.nickname,
             is_active=u.is_active, is_admin=u.is_admin,
-            persona_count=persona_count, created_at=u.created_at,
-        ))
-    return items
+            persona_count=cnt, created_at=u.created_at,
+        )
+        for u, cnt in rows
+    ]
 
 
 @router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -174,22 +178,39 @@ async def get_all_personas(
     db: AsyncSession = Depends(get_db),
     _: User = Depends(require_admin),
 ):
-    result = await db.execute(
-        select(Persona).order_by(desc(Persona.created_at)).offset(skip).limit(limit)
-    )
-    personas = result.scalars().all()
+    # User JOIN으로 N+1 제거
+    rows = (await db.execute(
+        select(Persona, User.nickname.label("user_nickname"))
+        .outerjoin(User, Persona.user_id == User.id)
+        .order_by(desc(Persona.created_at))
+        .offset(skip).limit(limit)
+    )).all()
 
-    items = []
-    for p in personas:
-        user_result = await db.execute(select(User).where(User.id == p.user_id))
-        owner = user_result.scalar_one_or_none()
-        items.append(AdminPersonaItem(
+    return [
+        AdminPersonaItem(
             id=p.id, name=p.name, user_id=p.user_id,
-            user_nickname=owner.nickname if owner else "탈퇴한 유저",
+            user_nickname=nick or "탈퇴한 유저",
             is_public=p.is_public, chat_count=p.chat_count,
             tags=p.tags, created_at=p.created_at,
-        ))
-    return items
+        )
+        for p, nick in rows
+    ]
+
+
+@router.put("/personas/{persona_id}/toggle-public")
+async def toggle_persona_public(
+    persona_id: int,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    """공개 페르소나를 강제 비공개로, 비공개를 공개로 전환."""
+    result = await db.execute(select(Persona).where(Persona.id == persona_id))
+    persona = result.scalar_one_or_none()
+    if not persona:
+        raise HTTPException(status_code=404, detail="페르소나를 찾을 수 없습니다.")
+    persona.is_public = not persona.is_public
+    await db.flush()
+    return {"id": persona.id, "is_public": persona.is_public}
 
 
 @router.delete("/personas/{persona_id}", status_code=status.HTTP_204_NO_CONTENT)
