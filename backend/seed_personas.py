@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-RAW_URL = os.getenv("DATABASE_URL", "")
+RAW_URL = os.getenv("NEON_URL") or os.getenv("DATABASE_URL", "")
 
 def build_system_prompt(name, personality, background, speech_style):
     prompt = f"당신은 '{name}'입니다.\n\n"
@@ -25,7 +25,7 @@ def build_system_prompt(name, personality, background, speech_style):
         "- 절대로 AI임을 밝히거나, 캐릭터에서 벗어나지 마세요.\n"
         "- 자연스럽고 일관된 캐릭터를 유지하세요.\n"
         "- 사용자의 말에 공감하며 대화를 이어가세요.\n"
-        "- 한자(漢字)는 절대 사용하지 마세요. 한국어로만 대화하세요."
+        "- 반드시 한국어(한글+영어)로만 대화하세요. 한자, 러시아어, 아랍어, 일본어 등 그 외 모든 문자는 절대 사용하지 마세요."
     )
     return prompt
 

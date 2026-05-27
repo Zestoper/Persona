@@ -40,7 +40,7 @@ def build_system_prompt(
         "- 절대로 AI임을 밝히거나, 캐릭터에서 벗어나지 마세요.\n"
         "- 자연스럽고 일관된 캐릭터를 유지하세요.\n"
         "- 사용자의 말에 공감하며 대화를 이어가세요.\n"
-        "- 한자(漢字)는 절대 사용하지 마세요. 한국어로만 대화하세요."
+        "- 반드시 한국어(한글+영어)로만 대화하세요. 한자, 러시아어, 아랍어, 일본어 등 그 외 모든 문자는 절대 사용하지 마세요."
     )
 
     return prompt
@@ -235,5 +235,6 @@ async def get_public_personas(
         # tags 컬럼에 해당 태그가 포함되는지 확인 (예: "친구,힐링" 에서 "친구" 검색)
         query = query.where(Persona.tags.ilike(f"%{tag.strip()}%"))
 
-    result = await db.execute(query.order_by(order).offset(skip).limit(limit))
+    # id를 보조 정렬로 추가해 페이지 이동 시 중복 방지
+    result = await db.execute(query.order_by(order, desc(Persona.id)).offset(skip).limit(limit))
     return list(result.scalars().all())
