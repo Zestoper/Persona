@@ -126,8 +126,14 @@ async def stream_ai_response(
 ) -> AsyncGenerator[str, None]:
     client = AsyncGroq(api_key=settings.GROQ_API_KEY)
 
-    lang_rule = "\n- 반드시 한국어(한글)로만 대화하세요. 한자, 중국어, 일본어, 러시아어, 베트남어, 아랍어 등 한글과 영어 이외의 언어는 절대 사용하지 마세요. 영어도 꼭 필요한 경우가 아니면 쓰지 마세요."
-    full_system_prompt = system_prompt + lang_rule
+    lang_rule = (
+        "[CRITICAL LANGUAGE RULE - HIGHEST PRIORITY]\n"
+        "You MUST respond ONLY in Korean (한글). "
+        "NEVER use Chinese characters (漢字/汉字), Japanese (hiragana/katakana/kanji), Arabic, Russian, or any non-Korean script. "
+        "Do NOT use Hanja (한자) under any circumstances. "
+        "If you need to write names or terms, write them in Korean (한글) only.\n\n"
+    )
+    full_system_prompt = lang_rule + system_prompt
 
     # 대화가 20개 넘으면 오래된 것들을 요약해서 컨텍스트 압축
     if len(history) > 20:
