@@ -25,6 +25,7 @@ export default function ChatPage() {
   const [personaSpeechStyle, setPersonaSpeechStyle] = useState<string | null>(null)
   const [personaPersonality, setPersonaPersonality] = useState<string | null>(null)
   const [isConnected, setIsConnected] = useState(false)
+  const [isDisconnected, setIsDisconnected] = useState(false)
   const [isAiTyping, setIsAiTyping] = useState(false)
   const [showScrollBtn, setShowScrollBtn] = useState(false)
   const [newMsgCount, setNewMsgCount] = useState(0)
@@ -32,6 +33,7 @@ export default function ChatPage() {
   const isMobile = useIsMobile()
   const { showToast } = useToast()
   const wsRef = useRef<WebSocket | null>(null)
+  const intentionalCloseRef = useRef(false)
   const scrollAreaRef = useRef<HTMLDivElement | null>(null)
   const bottomRef = useRef<HTMLDivElement | null>(null)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
@@ -114,8 +116,16 @@ export default function ChatPage() {
       }
     }
 
-    ws.onclose = () => setIsConnected(false)
-    return () => ws.close()
+    ws.onclose = () => {
+      setIsConnected(false)
+      if (!intentionalCloseRef.current) {
+        setIsDisconnected(true)
+      }
+    }
+    return () => {
+      intentionalCloseRef.current = true
+      ws.close()
+    }
   }, [personaId])
 
   const clearHistory = async () => {
@@ -193,6 +203,21 @@ export default function ChatPage() {
           초기화
         </button>
       </div>
+
+      {/* 연결 끊김 배너 */}
+      {isDisconnected && (
+        <div style={{ background: '#fef3c7', borderBottom: '1px solid #fde68a', padding: '0.625rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexShrink: 0 }}>
+          <span style={{ fontSize: '0.875rem', color: '#92400e', fontWeight: 500 }}>
+            연결이 끊어졌어요
+          </span>
+          <button
+            onClick={() => { intentionalCloseRef.current = false; setIsDisconnected(false); window.location.reload() }}
+            style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#92400e', background: 'rgba(0,0,0,0.08)', border: 'none', borderRadius: '8px', padding: '0.3rem 0.75rem', cursor: 'pointer' }}
+          >
+            다시 연결
+          </button>
+        </div>
+      )}
 
       {/* 메시지 목록 */}
       <div

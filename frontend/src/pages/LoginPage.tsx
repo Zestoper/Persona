@@ -26,7 +26,7 @@ export default function LoginPage() {
       await login(res.data.access_token)
       navigate('/')
     } catch (err: any) {
-      setError(err.response?.data?.detail || '로그인에 실패했습니다.')
+      setError(err.response?.data?.detail || err.message || '로그인에 실패했습니다.')
     } finally {
       setIsLoading(false)
     }

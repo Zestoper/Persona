@@ -10,6 +10,7 @@ interface User {
   email: string
   nickname: string
   is_admin: boolean
+  is_active: boolean
 }
 
 interface AuthContextType {
@@ -33,10 +34,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (token) {
-      // 토큰이 있으면 내 정보를 서버에서 가져옴
       api.get('/auth/me')
-        .then((res) => setUser(res.data))
-        .catch(() => localStorage.removeItem('token')) // 만료됐으면 삭제
+        .then((res) => {
+          if (res.data.is_active === false) {
+            localStorage.removeItem('token')
+          } else {
+            setUser(res.data)
+          }
+        })
+        .catch(() => localStorage.removeItem('token'))
         .finally(() => setIsLoading(false))
     } else {
       setIsLoading(false)
@@ -45,9 +51,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // ── 로그인 ────────────────────────────────────────────────
   const login = async (token: string) => {
-    localStorage.setItem('token', token)   // 토큰 저장
-    const res = await api.get('/auth/me')  // 내 정보 가져오기
-    setUser(res.data)                      // 전역 상태에 저장
+    localStorage.setItem('token', token)
+    const res = await api.get('/auth/me')
+    if (res.data.is_active === false) {
+      localStorage.removeItem('token')
+      throw new Error('계정이 정지됐습니다. 관리자에게 문의하세요.')
+    }
+    setUser(res.data)
   }
 
   const updateUser = (updated: Partial<User>) => {
