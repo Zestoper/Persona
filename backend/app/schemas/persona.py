@@ -76,6 +76,7 @@ class PersonaResponse(BaseModel):
     tags: str | None
     created_at: datetime
     updated_at: datetime
+    creator_nickname: str | None = None
 
     class Config:
         from_attributes = True
@@ -93,6 +94,7 @@ class PersonaListResponse(BaseModel):
     avatar_url: str | None
     tags: str | None
     created_at: datetime
+    creator_nickname: str | None = None
 
     class Config:
         from_attributes = True
