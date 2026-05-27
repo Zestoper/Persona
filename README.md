@@ -2,6 +2,20 @@
 
 나만의 AI 캐릭터를 만들고, 그 캐릭터와 실시간으로 대화할 수 있는 풀스택 웹 서비스입니다.
 
+## 스크린샷
+
+| 랜딩 페이지 | 마켓플레이스 |
+|---|---|
+| ![랜딩 페이지](docs/screenshots/landing.png) | ![마켓플레이스](docs/screenshots/marketplace.png) |
+
+| 로그인 | 요금제 |
+|---|---|
+| ![로그인](docs/screenshots/login.png) | ![요금제](docs/screenshots/pricing.png) |
+
+| 모바일 |
+|---|
+| ![모바일](docs/screenshots/mobile.png) |
+
 ## 주요 기능
 
 | 기능 | 설명 |
