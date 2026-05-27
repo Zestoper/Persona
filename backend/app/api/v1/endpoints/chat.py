@@ -53,12 +53,18 @@ async def websocket_chat(
         await websocket.close()
         return
 
-    # ── 페르소나 존재 확인 ─────────────────────────────────
+    # ── 페르소나 존재 + 접근 권한 확인 ───────────────────────
     result = await db.execute(select(Persona).where(Persona.id == persona_id))
     persona = result.scalar_one_or_none()
 
     if not persona:
         await websocket.send_text(json.dumps({"type": "error", "message": "페르소나를 찾을 수 없습니다"}))
+        await websocket.close()
+        return
+
+    # 비공개 페르소나는 본인만 접근 가능
+    if not persona.is_public and persona.user_id != current_user.id:
+        await websocket.send_text(json.dumps({"type": "error", "message": "비공개 페르소나입니다"}))
         await websocket.close()
         return
 
