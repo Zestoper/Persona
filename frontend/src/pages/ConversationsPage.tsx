@@ -4,6 +4,7 @@ import api from '../api/client'
 import { useThemeColors } from '../hooks/useThemeColors'
 import { useIsMobile } from '../hooks/useIsMobile'
 import PersonaAvatar from '../components/PersonaAvatar'
+import { SkeletonRow } from '../components/Skeleton'
 
 interface ConversationItem {
   id: number
@@ -59,9 +60,7 @@ export default function ConversationsPage() {
         {/* 로딩 */}
         {isLoading && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {[...Array(5)].map((_, i) => (
-              <div key={i} style={{ background: c.bgCard, borderRadius: '16px', padding: '1.25rem', border: `1px solid ${c.border}`, height: '76px' }} />
-            ))}
+            {[...Array(5)].map((_, i) => <SkeletonRow key={i} c={c} />)}
           </div>
         )}
 

@@ -6,6 +6,7 @@ import { useThemeColors } from '../hooks/useThemeColors'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useToast } from '../context/ToastContext'
 import PersonaAvatar from '../components/PersonaAvatar'
+import { SkeletonCard } from '../components/Skeleton'
 
 interface Persona {
   id: number
@@ -108,8 +109,11 @@ export default function PersonaDetailPage() {
 
   if (isLoading) {
     return (
-      <div style={{ minHeight: 'calc(100vh - 64px)', background: c.bgPage, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: c.textMuted }}>로딩 중...</span>
+      <div style={{ minHeight: 'calc(100vh - 64px)', background: c.bgPage, padding: isMobile ? '1.25rem 1rem' : '2rem 1.5rem' }}>
+        <div style={{ maxWidth: '720px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <SkeletonCard c={c} />
+          <SkeletonCard c={c} />
+        </div>
       </div>
     )
   }

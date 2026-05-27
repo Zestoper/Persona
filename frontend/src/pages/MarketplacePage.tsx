@@ -6,6 +6,7 @@ import { useIsMobile } from '../hooks/useIsMobile'
 import { useThemeColors } from '../hooks/useThemeColors'
 import { useToast } from '../context/ToastContext'
 import PersonaCard, { type PersonaCardData as Persona } from '../components/PersonaCard'
+import { SkeletonCard } from '../components/Skeleton'
 
 const POPULAR_TAGS = ['친구', '연인', '멘토', '캐릭터', '판타지', '학교', '직장', '힐링']
 
@@ -199,9 +200,7 @@ export default function MarketplacePage() {
         {/* 로딩 스켈레톤 */}
         {isLoading && (
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
-            {[...Array(6)].map((_, i) => (
-              <div key={i} style={{ background: c.bgCard, borderRadius: '16px', padding: '1.25rem', border: `1px solid ${c.border}`, height: '130px' }} />
-            ))}
+            {[...Array(6)].map((_, i) => <SkeletonCard key={i} c={c} />)}
           </div>
         )}
 

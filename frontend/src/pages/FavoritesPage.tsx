@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useThemeColors } from '../hooks/useThemeColors'
 import PersonaCard, { type PersonaCardData } from '../components/PersonaCard'
+import { SkeletonCard } from '../components/Skeleton'
 
 export default function FavoritesPage() {
   const navigate = useNavigate()
@@ -62,9 +63,7 @@ export default function FavoritesPage() {
         {/* 스켈레톤 */}
         {isLoading && (
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
-            {[...Array(6)].map((_, i) => (
-              <div key={i} style={{ background: c.bgCard, borderRadius: '16px', border: `1px solid ${c.border}`, height: '130px', animation: 'pulse 1.5s ease-in-out infinite' }} />
-            ))}
+            {[...Array(6)].map((_, i) => <SkeletonCard key={i} c={c} />)}
           </div>
         )}
 
@@ -103,12 +102,6 @@ export default function FavoritesPage() {
         )}
       </div>
 
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-      `}</style>
     </div>
   )
 }

@@ -29,7 +29,14 @@ function HomeRoute() {
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth()
-  if (isLoading) return <div className="flex items-center justify-center h-screen text-gray-400">로딩 중...</div>
+  if (isLoading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', gap: '0.5rem' }}>
+      <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#6366f1', animation: 'dot-bounce 1.2s ease-in-out infinite' }} />
+      <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#6366f1', animation: 'dot-bounce 1.2s ease-in-out 0.2s infinite' }} />
+      <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#6366f1', animation: 'dot-bounce 1.2s ease-in-out 0.4s infinite' }} />
+      <style>{`@keyframes dot-bounce { 0%,80%,100% { transform:scale(0.6); opacity:0.4 } 40% { transform:scale(1); opacity:1 } }`}</style>
+    </div>
+  )
   if (!user) return <Navigate to="/login" replace />
   return <>{children}</>
 }

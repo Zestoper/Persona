@@ -5,6 +5,7 @@ import { useIsMobile } from '../hooks/useIsMobile'
 import { useToast } from '../context/ToastContext'
 import { useThemeColors } from '../hooks/useThemeColors'
 import PersonaAvatar from '../components/PersonaAvatar'
+import { SkeletonRow } from '../components/Skeleton'
 
 interface Persona {
   id: number
@@ -57,9 +58,7 @@ export default function MyPersonasPage() {
 
         {isLoading && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {[...Array(3)].map((_, i) => (
-              <div key={i} style={{ background: c.bgCard, borderRadius: '14px', padding: '1.25rem', border: `1px solid ${c.border}`, height: '72px' }} />
-            ))}
+            {[...Array(3)].map((_, i) => <SkeletonRow key={i} c={c} />)}
           </div>
         )}
 

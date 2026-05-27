@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { useThemeColors } from '../hooks/useThemeColors'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useToast } from '../context/ToastContext'
+import { SkeletonRow } from '../components/Skeleton'
 
 // ── 타입 정의 ─────────────────────────────────────────────
 
@@ -184,7 +185,9 @@ export default function AdminPage() {
         </div>
 
         {isLoading && (
-          <div style={{ textAlign: 'center', padding: '4rem', color: c.textMuted }}>로딩 중...</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {[...Array(5)].map((_, i) => <SkeletonRow key={i} c={c} />)}
+          </div>
         )}
 
         {/* 통계 탭 */}
