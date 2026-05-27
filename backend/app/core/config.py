@@ -17,10 +17,11 @@ class Settings(BaseSettings):
 
     @property
     def ASYNC_DATABASE_URL(self) -> str:
-        # Render는 postgresql:// 형태로 주는데 asyncpg는 postgresql+asyncpg:// 필요
         url = self.DATABASE_URL
         if url.startswith("postgresql://"):
-            return url.replace("postgresql://", "postgresql+asyncpg://", 1)
+            url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        # asyncpg는 sslmode 대신 ssl 파라미터 사용 (Neon 등 클라우드 DB 호환)
+        url = url.replace("sslmode=require", "ssl=require")
         return url
 
     # ── JWT 인증 ───────────────────────────────────────────
