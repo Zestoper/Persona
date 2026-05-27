@@ -1,5 +1,4 @@
 # ── SQLAlchemy 비동기 관련 모듈 임포트 ────────────────────
-import re
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 from app.core.config import settings
@@ -12,12 +11,10 @@ _url = settings.DATABASE_URL
 if _url.startswith("postgresql://"):
     _url = _url.replace("postgresql://", "postgresql+asyncpg://", 1)
 
-# SSL 파라미터는 URL에서 제거하고 connect_args로 따로 전달
-# (URL에 sslmode=require 넣으면 channel_binding 에러 발생)
-_needs_ssl = "sslmode=require" in _url or "ssl=require" in _url
-_url = re.sub(r"[?&]sslmode=[^&]*", "", _url)
-_url = re.sub(r"[?&]ssl=[^&]*", "", _url)
-_url = _url.rstrip("?").rstrip("&")
+# 쿼리 파라미터(sslmode, channel_binding 등)는 asyncpg와 충돌하므로 제거
+# SSL은 connect_args로 따로 전달
+_needs_ssl = "?" in _url  # 쿼리 파라미터가 있으면 클라우드 DB → SSL 필요
+_url = _url.split("?")[0]
 
 _connect_args = {"ssl": True} if _needs_ssl else {}
 
