@@ -6,6 +6,7 @@ import { useThemeColors } from '../hooks/useThemeColors'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useToast } from '../context/ToastContext'
 import { SkeletonRow } from '../components/Skeleton'
+import ConfirmModal from '../components/ConfirmModal'
 
 // ── 타입 정의 ─────────────────────────────────────────────
 
@@ -73,6 +74,7 @@ export default function AdminPage() {
   const [reports, setReports] = useState<AdminReport[]>([])
   const [reportFilter, setReportFilter] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [confirmState, setConfirmState] = useState<{ message: string; subMessage: string; onConfirm: () => void } | null>(null)
 
   // 관리자 아닌 경우 차단
   useEffect(() => {
@@ -120,22 +122,34 @@ export default function AdminPage() {
     } catch { showToast('처리에 실패했어요', 'error') }
   }
 
-  const handleDeleteUser = async (userId: number, nickname: string) => {
-    if (!confirm(`"${nickname}" 계정을 삭제할까요? 해당 유저의 페르소나와 대화 기록도 모두 삭제됩니다.`)) return
-    try {
-      await api.delete(`/admin/users/${userId}`)
-      setUsers((prev) => prev.filter((u) => u.id !== userId))
-      showToast('계정이 삭제됐어요', 'success')
-    } catch { showToast('삭제에 실패했어요', 'error') }
+  const handleDeleteUser = (userId: number, nickname: string) => {
+    setConfirmState({
+      message: `"${nickname}" 계정을 삭제할까요?`,
+      subMessage: '해당 유저의 페르소나와 대화 기록도 모두 삭제됩니다.',
+      onConfirm: async () => {
+        try {
+          await api.delete(`/admin/users/${userId}`)
+          setUsers((prev) => prev.filter((u) => u.id !== userId))
+          showToast('계정이 삭제됐어요', 'success')
+        } catch { showToast('삭제에 실패했어요', 'error') }
+        setConfirmState(null)
+      },
+    })
   }
 
-  const handleDeletePersona = async (personaId: number, name: string) => {
-    if (!confirm(`"${name}" 페르소나를 강제 삭제할까요? 관련 대화도 모두 삭제됩니다.`)) return
-    try {
-      await api.delete(`/admin/personas/${personaId}`)
-      setPersonas((prev) => prev.filter((p) => p.id !== personaId))
-      showToast('삭제됐어요', 'success')
-    } catch { showToast('삭제에 실패했어요', 'error') }
+  const handleDeletePersona = (personaId: number, name: string) => {
+    setConfirmState({
+      message: `"${name}" 페르소나를 강제 삭제할까요?`,
+      subMessage: '관련 대화도 모두 삭제됩니다.',
+      onConfirm: async () => {
+        try {
+          await api.delete(`/admin/personas/${personaId}`)
+          setPersonas((prev) => prev.filter((p) => p.id !== personaId))
+          showToast('삭제됐어요', 'success')
+        } catch { showToast('삭제에 실패했어요', 'error') }
+        setConfirmState(null)
+      },
+    })
   }
 
   const handleUpdateReport = async (reportId: number, newStatus: 'resolved' | 'rejected') => {
@@ -156,6 +170,17 @@ export default function AdminPage() {
   if (!user?.is_admin) return null
 
   return (
+    <>
+    {confirmState && (
+      <ConfirmModal
+        message={confirmState.message}
+        subMessage={confirmState.subMessage}
+        confirmLabel="삭제"
+        danger
+        onConfirm={confirmState.onConfirm}
+        onCancel={() => setConfirmState(null)}
+      />
+    )}
     <div style={{ minHeight: 'calc(100vh - 64px)', background: c.bgPage, transition: 'background 0.2s ease' }}>
       {/* 헤더 */}
       <div style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)', padding: isMobile ? '1.75rem 1rem' : '2rem 1.5rem' }}>
@@ -354,6 +379,7 @@ export default function AdminPage() {
         )}
       </div>
     </div>
+    </>
   )
 }
 

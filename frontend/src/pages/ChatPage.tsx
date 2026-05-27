@@ -5,6 +5,7 @@ import { useIsMobile } from '../hooks/useIsMobile'
 import { useToast } from '../context/ToastContext'
 import { useThemeColors } from '../hooks/useThemeColors'
 import api from '../api/client'
+import ConfirmModal from '../components/ConfirmModal'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -26,6 +27,7 @@ export default function ChatPage() {
   const [personaPersonality, setPersonaPersonality] = useState<string | null>(null)
   const [isConnected, setIsConnected] = useState(false)
   const [isDisconnected, setIsDisconnected] = useState(false)
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
   const [isAiTyping, setIsAiTyping] = useState(false)
   const [showScrollBtn, setShowScrollBtn] = useState(false)
   const [newMsgCount, setNewMsgCount] = useState(0)
@@ -129,10 +131,10 @@ export default function ChatPage() {
   }, [personaId])
 
   const clearHistory = async () => {
-    if (!confirm('대화 내용을 모두 삭제할까요?')) return
     await api.delete(`/chat/${personaId}/history`)
     setMessages([])
     showToast('대화 내용이 초기화됐어요.', 'success')
+    setShowClearConfirm(false)
   }
 
   const sendMessage = () => {
@@ -173,6 +175,17 @@ export default function ChatPage() {
   }
 
   return (
+    <>
+    {showClearConfirm && (
+      <ConfirmModal
+        message="대화 내용을 초기화할까요?"
+        subMessage="모든 대화 기록이 삭제되며 되돌릴 수 없어요."
+        confirmLabel="초기화"
+        danger
+        onConfirm={clearHistory}
+        onCancel={() => setShowClearConfirm(false)}
+      />
+    )}
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 64px)', background: c.bgPage, transition: 'background 0.2s ease' }}>
 
       {/* 채팅 헤더 */}
@@ -197,7 +210,7 @@ export default function ChatPage() {
           </div>
         </button>
         <button
-          onClick={clearHistory}
+          onClick={() => setShowClearConfirm(true)}
           style={{ fontSize: '0.75rem', color: c.textMuted, background: 'none', border: `1px solid ${c.borderStrong}`, borderRadius: '8px', padding: '0.3rem 0.75rem', cursor: 'pointer', flexShrink: 0 }}
         >
           초기화
@@ -381,5 +394,6 @@ export default function ChatPage() {
         }
       `}</style>
     </div>
+    </>
   )
 }

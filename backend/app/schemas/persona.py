@@ -39,6 +39,28 @@ class PersonaUpdate(BaseModel):
     avatar_url: str | None = None
     tags: str | None = None
 
+    @field_validator("name")
+    @classmethod
+    def name_must_be_valid(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        v = v.strip()
+        if len(v) < 1:
+            raise ValueError("캐릭터 이름을 입력해주세요.")
+        if len(v) > 50:
+            raise ValueError("캐릭터 이름은 50자 이하여야 합니다.")
+        return v
+
+    @field_validator("personality")
+    @classmethod
+    def personality_must_be_valid(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        v = v.strip()
+        if len(v) < 10:
+            raise ValueError("성격 설명을 10자 이상 입력해주세요.")
+        return v
+
 
 class PersonaResponse(BaseModel):
     id: int

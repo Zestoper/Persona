@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useThemeColors } from '../hooks/useThemeColors'
 import api from '../api/client'
+import ConfirmModal from '../components/ConfirmModal'
 
 export default function ProfilePage() {
   const { user, logout, updateUser } = useAuth()
@@ -18,6 +19,7 @@ export default function ProfilePage() {
   const [pw, setPw] = useState({ current: '', next: '', confirm: '' })
   const [pwMsg, setPwMsg] = useState<{ text: string; ok: boolean } | null>(null)
   const [isPwSaving, setIsPwSaving] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const handleNicknameSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -67,6 +69,17 @@ export default function ProfilePage() {
   if (!user) return null
 
   return (
+    <>
+    {showDeleteConfirm && (
+      <ConfirmModal
+        message="정말 탈퇴할까요?"
+        subMessage="모든 페르소나와 대화 기록이 삭제되며 되돌릴 수 없어요."
+        confirmLabel="탈퇴하기"
+        danger
+        onConfirm={async () => { await api.delete('/auth/me'); logout() }}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
+    )}
     <div style={{ minHeight: 'calc(100vh - 64px)', background: c.bgPage, padding: isMobile ? '1.5rem 1rem' : '2rem 1.5rem', transition: 'background 0.2s ease' }}>
       <div style={{ maxWidth: '520px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
@@ -168,11 +181,7 @@ export default function ProfilePage() {
               <p style={{ color: c.textMuted, fontSize: '0.8125rem', margin: '0.25rem 0 0 0' }}>탈퇴하면 모든 페르소나와 대화 기록이 삭제돼요</p>
             </div>
             <button
-              onClick={async () => {
-                if (!confirm('정말 탈퇴할까요? 모든 데이터가 삭제되며 되돌릴 수 없어요.')) return
-                await api.delete('/auth/me')
-                logout()
-              }}
+              onClick={() => setShowDeleteConfirm(true)}
               style={{ fontSize: '0.875rem', color: '#dc2626', padding: '0.5rem 1rem', border: '1.5px solid #fecaca', borderRadius: '10px', background: c.bgCard, cursor: 'pointer', whiteSpace: 'nowrap' }}
             >
               탈퇴하기
@@ -182,5 +191,6 @@ export default function ProfilePage() {
 
       </div>
     </div>
+    </>
   )
 }

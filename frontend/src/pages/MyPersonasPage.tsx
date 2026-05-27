@@ -6,6 +6,7 @@ import { useToast } from '../context/ToastContext'
 import { useThemeColors } from '../hooks/useThemeColors'
 import PersonaAvatar from '../components/PersonaAvatar'
 import { SkeletonRow } from '../components/Skeleton'
+import ConfirmModal from '../components/ConfirmModal'
 
 interface Persona {
   id: number
@@ -25,6 +26,7 @@ export default function MyPersonasPage() {
   const c = useThemeColors()
   const [personas, setPersonas] = useState<Persona[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null)
 
   useEffect(() => {
     api.get('/personas/me')
@@ -32,14 +34,26 @@ export default function MyPersonasPage() {
       .finally(() => setIsLoading(false))
   }, [])
 
-  const handleDelete = async (id: number, name: string) => {
-    if (!confirm(`"${name}" 페르소나를 삭제할까요? 대화 기록도 함께 삭제됩니다.`)) return
-    await api.delete(`/personas/${id}`)
-    setPersonas(personas.filter((p) => p.id !== id))
-    showToast(`"${name}" 페르소나가 삭제됐어요.`, 'success')
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    await api.delete(`/personas/${deleteTarget.id}`)
+    setPersonas(personas.filter((p) => p.id !== deleteTarget.id))
+    showToast(`"${deleteTarget.name}" 페르소나가 삭제됐어요.`, 'success')
+    setDeleteTarget(null)
   }
 
   return (
+    <>
+    {deleteTarget && (
+      <ConfirmModal
+        message={`"${deleteTarget.name}" 페르소나를 삭제할까요?`}
+        subMessage="대화 기록도 함께 삭제되며 되돌릴 수 없어요."
+        confirmLabel="삭제"
+        danger
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
+    )}
     <div style={{ minHeight: 'calc(100vh - 64px)', background: c.bgPage, padding: isMobile ? '1.5rem 1rem' : '2rem 1.5rem', transition: 'background 0.2s ease' }}>
       <div style={{ maxWidth: '720px', margin: '0 auto' }}>
 
@@ -86,12 +100,13 @@ export default function MyPersonasPage() {
               c={c}
               onChat={() => navigate(`/chat/${persona.id}`)}
               onEdit={() => navigate(`/edit/${persona.id}`)}
-              onDelete={() => handleDelete(persona.id, persona.name)}
+              onDelete={() => setDeleteTarget({ id: persona.id, name: persona.name })}
             />
           ))}
         </div>
       </div>
     </div>
+    </>
   )
 }
 

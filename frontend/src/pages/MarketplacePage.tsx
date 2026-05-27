@@ -57,15 +57,18 @@ export default function MarketplacePage() {
     }
   }
 
-  // 즐겨찾기 목록 로드 (로그인 시)
-  useEffect(() => {
+  // 즐겨찾기 목록 로드 (로그인 시 + 페이지 포커스 시 재동기화)
+  const refreshFavorites = () => {
     if (!user) { setFavoritedIds(new Set()); return }
-    api.get('/favorites/ids')
-      .then((res) => setFavoritedIds(new Set(res.data.ids)))
-      .catch(() => {})
-    api.get('/favorites')
-      .then((res) => setFavoritePersonas(res.data))
-      .catch(() => {})
+    api.get('/favorites/ids').then((res) => setFavoritedIds(new Set(res.data.ids))).catch(() => {})
+    api.get('/favorites').then((res) => setFavoritePersonas(res.data)).catch(() => {})
+  }
+
+  useEffect(() => { refreshFavorites() }, [user])
+
+  useEffect(() => {
+    window.addEventListener('focus', refreshFavorites)
+    return () => window.removeEventListener('focus', refreshFavorites)
   }, [user])
 
   const handleSearch = (e: React.FormEvent) => {
