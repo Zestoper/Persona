@@ -4,6 +4,7 @@ import PersonaAvatar from '../components/PersonaAvatar'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useToast } from '../context/ToastContext'
 import { useThemeColors } from '../hooks/useThemeColors'
+import { useAuth } from '../context/AuthContext'
 import api from '../api/client'
 import ConfirmModal from '../components/ConfirmModal'
 
@@ -34,6 +35,7 @@ export default function ChatPage() {
 
   const isMobile = useIsMobile()
   const { showToast } = useToast()
+  const { logout } = useAuth()
   const wsRef = useRef<WebSocket | null>(null)
   const intentionalCloseRef = useRef(false)
   const wasConnectedRef = useRef(false)
@@ -63,6 +65,23 @@ export default function ChatPage() {
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token) { navigate('/login'); return }
+
+    // JWT 만료 시각 계산 → 만료되면 자동 로그아웃
+    let expiryTimer: ReturnType<typeof setTimeout> | null = null
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]))
+      const msUntilExpiry = payload.exp * 1000 - Date.now()
+      if (msUntilExpiry > 0) {
+        expiryTimer = setTimeout(() => {
+          showToast('세션이 만료됐어요. 다시 로그인해주세요.', 'info')
+          intentionalCloseRef.current = true
+          wsRef.current?.close()
+          logout()
+        }, msUntilExpiry)
+      }
+    } catch {
+      // JWT 디코딩 실패 시 무시
+    }
 
     const ws = new WebSocket(`${import.meta.env.VITE_WS_URL ?? 'ws://localhost:8000/api/v1'}/chat/${personaId}?token=${token}`)
     wsRef.current = ws
@@ -115,8 +134,15 @@ export default function ChatPage() {
         setTimeout(() => inputRef.current?.focus(), 0)
 
       } else if (data.type === 'error') {
-        showToast(data.message, 'error')
-        navigate('/')
+        if (data.code === 'auth_failed') {
+          // 토큰 만료 → 로그아웃 처리 (logout()이 /login으로 리다이렉트)
+          showToast(data.message || '세션이 만료됐어요. 다시 로그인해주세요.', 'info')
+          intentionalCloseRef.current = true
+          logout()
+        } else {
+          showToast(data.message, 'error')
+          navigate('/')
+        }
       }
     }
 
@@ -133,6 +159,7 @@ export default function ChatPage() {
       }
     }
     return () => {
+      if (expiryTimer) clearTimeout(expiryTimer)
       intentionalCloseRef.current = true
       ws.close()
     }

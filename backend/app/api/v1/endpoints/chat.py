@@ -49,7 +49,7 @@ async def websocket_chat(
         current_user: User = await get_current_user(token=token, db=db)
     except Exception:
         # 토큰이 없거나 만료됐으면 에러 메시지 보내고 연결 끊기
-        await websocket.send_text(json.dumps({"type": "error", "message": "인증 실패"}))
+        await websocket.send_text(json.dumps({"type": "error", "code": "auth_failed", "message": "세션이 만료됐어요. 다시 로그인해주세요."}))
         await websocket.close()
         return
 
