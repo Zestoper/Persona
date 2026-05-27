@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import api from '../api/client'
+import { useAuth } from '../context/AuthContext'
 import { useThemeColors } from '../hooks/useThemeColors'
 
 const STYLES = [
@@ -20,6 +21,7 @@ function dicebearUrl(style: string, seed: string) {
 export default function EditPersonaPage() {
   const { personaId } = useParams<{ personaId: string }>()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const c = useThemeColors()
 
   const [form, setForm] = useState({ name: '', personality: '', background: '', speech_style: '', is_public: false })
@@ -39,13 +41,19 @@ export default function EditPersonaPage() {
     api.get(`/personas/${personaId}`)
       .then((res) => {
         const p = res.data
+        // 본인 페르소나가 아니면 접근 차단
+        if (user && p.user_id !== user.id) {
+          navigate('/my', { replace: true })
+          return
+        }
         setForm({ name: p.name, personality: p.personality, background: p.background ?? '', speech_style: p.speech_style ?? '', is_public: p.is_public })
         setCurrentAvatarUrl(p.avatar_url)
         setSeed(p.name)
         setTags(p.tags ? p.tags.split(',').filter(Boolean) : [])
       })
+      .catch(() => navigate('/my', { replace: true }))
       .finally(() => setIsFetching(false))
-  }, [personaId])
+  }, [personaId, user])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target
