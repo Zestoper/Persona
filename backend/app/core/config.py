@@ -15,15 +15,6 @@ class Settings(BaseSettings):
     # ── 데이터베이스 ───────────────────────────────────────
     DATABASE_URL: str  # .env에서 필수로 읽어옴 (기본값 없으면 없으면 앱 시작 실패)
 
-    @property
-    def ASYNC_DATABASE_URL(self) -> str:
-        url = self.DATABASE_URL
-        if url.startswith("postgresql://"):
-            url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
-        # asyncpg는 sslmode 대신 ssl 파라미터 사용 (Neon 등 클라우드 DB 호환)
-        url = url.replace("sslmode=require", "ssl=require")
-        return url
-
     # ── JWT 인증 ───────────────────────────────────────────
     SECRET_KEY: str              # JWT 서명에 쓸 비밀 키 (.env에서 읽음)
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30  # 토큰 유효 시간 (기본 30분)

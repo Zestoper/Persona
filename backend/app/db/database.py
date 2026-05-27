@@ -1,22 +1,35 @@
 # ── SQLAlchemy 비동기 관련 모듈 임포트 ────────────────────
+import re
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-# AsyncSession  : 비동기 DB 세션 타입 (쿼리를 await으로 실행)
-# create_async_engine : 비동기 DB 연결 엔진 생성 함수
-# async_sessionmaker  : 비동기 세션 팩토리 생성 함수
+from sqlalchemy.orm import DeclarativeBase
+from app.core.config import settings
 
-from sqlalchemy.orm import DeclarativeBase  # 모든 DB 모델의 부모 클래스
-from app.core.config import settings        # 위에서 만든 설정 객체
 
+# ── DATABASE_URL → asyncpg 호환 형식으로 변환 ─────────────
+_url = settings.DATABASE_URL
+
+# postgresql:// → postgresql+asyncpg://
+if _url.startswith("postgresql://"):
+    _url = _url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+# SSL 파라미터는 URL에서 제거하고 connect_args로 따로 전달
+# (URL에 sslmode=require 넣으면 channel_binding 에러 발생)
+_needs_ssl = "sslmode=require" in _url or "ssl=require" in _url
+_url = re.sub(r"[?&]sslmode=[^&]*", "", _url)
+_url = re.sub(r"[?&]ssl=[^&]*", "", _url)
+_url = _url.rstrip("?").rstrip("&")
+
+_connect_args = {"ssl": True} if _needs_ssl else {}
 
 # ── 비동기 DB 엔진 생성 ────────────────────────────────────
-# 비유: 엔진 = 데이터베이스로 가는 '도로'. 한 번 만들어두면 계속 재사용.
 engine = create_async_engine(
-    settings.ASYNC_DATABASE_URL,  # asyncpg 호환 형식으로 자동 변환
+    _url,
     echo=settings.DEBUG,
     pool_size=2,
     max_overflow=3,
     pool_timeout=30,
-    pool_recycle=300,  # 5분마다 연결 재사용 (Neon 유휴 연결 끊김 방지)
+    pool_recycle=300,
+    connect_args=_connect_args,
 )
 
 # ── 비동기 세션 팩토리 생성 ────────────────────────────────
