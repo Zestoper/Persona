@@ -10,6 +10,7 @@ export interface PersonaCardData {
   chat_count: number
   avatar_url: string | null
   tags: string | null
+  creator_nickname: string | null
 }
 
 export default function PersonaCard({
@@ -84,9 +85,16 @@ export default function PersonaCard({
       )}
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: '0.75rem', color: c.textMuted }}>
-          대화 {persona.chat_count.toLocaleString()}회
-        </span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.125rem' }}>
+          <span style={{ fontSize: '0.75rem', color: c.textMuted }}>
+            대화 {persona.chat_count.toLocaleString()}회
+          </span>
+          {persona.creator_nickname && (
+            <span style={{ fontSize: '0.6875rem', color: c.textMuted }}>
+              by {persona.creator_nickname}
+            </span>
+          )}
+        </div>
         <span style={{ fontSize: '0.8125rem', color: hovered ? '#6366f1' : c.textMuted, fontWeight: 600, transition: 'color 0.18s' }}>
           대화하기 →
         </span>

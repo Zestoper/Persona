@@ -100,5 +100,9 @@ class Persona(Base):
     reports = relationship("Report", back_populates="persona", cascade="all, delete-orphan")
     favorites = relationship("Favorite", back_populates="persona", cascade="all, delete-orphan")
 
+    @property
+    def creator_nickname(self) -> str | None:
+        return self.user.nickname if self.user else None
+
     def __repr__(self):
         return f"<Persona id={self.id} name={self.name} owner={self.user_id}>"

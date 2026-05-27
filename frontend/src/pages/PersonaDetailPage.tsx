@@ -20,6 +20,7 @@ interface Persona {
   avatar_url: string | null
   tags: string | null
   created_at: string
+  creator_nickname: string | null
 }
 
 const REPORT_REASONS = ['욕설/혐오발언', '성인물', '스팸/광고', '사기/사칭', '기타']
@@ -152,6 +153,9 @@ export default function PersonaDetailPage() {
               )}
               <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.8125rem', margin: 0 }}>
                 대화 {persona.chat_count.toLocaleString()}회
+                {persona.creator_nickname && !isOwner && (
+                  <span style={{ marginLeft: '0.75rem' }}>· by {persona.creator_nickname}</span>
+                )}
               </p>
             </div>
           </div>

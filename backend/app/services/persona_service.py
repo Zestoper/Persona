@@ -1,6 +1,7 @@
 # ── 임포트 ────────────────────────────────────────────────
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc, asc  # desc/asc: 내림차순/오름차순 정렬
+from sqlalchemy.orm import selectinload
 from fastapi import HTTPException, status
 
 from app.models.persona import Persona
@@ -90,10 +91,11 @@ async def get_my_personas(
 
     result = await db.execute(
         select(Persona)
-        .where(Persona.user_id == current_user.id)  # 내 것만 필터
-        .order_by(desc(Persona.created_at))          # 최신순 정렬
+        .where(Persona.user_id == current_user.id)
+        .options(selectinload(Persona.user))
+        .order_by(desc(Persona.created_at))
     )
-    return list(result.scalars().all())  # 결과를 리스트로 변환
+    return list(result.scalars().all())
 
 
 # ── 특정 페르소나 조회 ─────────────────────────────────────
@@ -104,7 +106,9 @@ async def get_persona_by_id(
 ) -> Persona:
 
     result = await db.execute(
-        select(Persona).where(Persona.id == persona_id)
+        select(Persona)
+        .where(Persona.id == persona_id)
+        .options(selectinload(Persona.user))
     )
     persona = result.scalar_one_or_none()
 
@@ -237,5 +241,5 @@ async def get_public_personas(
         query = query.where(Persona.tags.ilike(f"%{tag.strip()}%"))
 
     # id를 보조 정렬로 추가해 페이지 이동 시 중복 방지
-    result = await db.execute(query.order_by(order, desc(Persona.id)).offset(skip).limit(limit))
+    result = await db.execute(query.options(selectinload(Persona.user)).order_by(order, desc(Persona.id)).offset(skip).limit(limit))
     return list(result.scalars().all())
