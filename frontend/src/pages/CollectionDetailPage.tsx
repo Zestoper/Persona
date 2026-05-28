@@ -68,7 +68,7 @@ export default function CollectionDetailPage() {
         <div style={{ height: '160px', background: c.bgHero }} />
         <div style={{ maxWidth: '1024px', margin: '0 auto', padding: isMobile ? '1.5rem 1rem' : '2rem 1.5rem' }}>
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' }}>
-            {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+            {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} c={c} />)}
           </div>
         </div>
       </div>
