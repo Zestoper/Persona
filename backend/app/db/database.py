@@ -1,4 +1,6 @@
 # ── SQLAlchemy 비동기 관련 모듈 임포트 ────────────────────
+import ssl
+import certifi
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 from app.core.config import settings
@@ -16,7 +18,11 @@ if _url.startswith("postgresql://"):
 _needs_ssl = "?" in _url  # 쿼리 파라미터가 있으면 클라우드 DB → SSL 필요
 _url = _url.split("?")[0]
 
-_connect_args = {"ssl": True} if _needs_ssl else {}
+if _needs_ssl:
+    _ssl_ctx = ssl.create_default_context(cafile=certifi.where())
+    _connect_args = {"ssl": _ssl_ctx}
+else:
+    _connect_args = {}
 
 # ── 비동기 DB 엔진 생성 ────────────────────────────────────
 engine = create_async_engine(

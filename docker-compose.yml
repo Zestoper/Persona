@@ -1,0 +1,49 @@
+services:
+  # ── PostgreSQL ─────────────────────────────────────────────
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: persona
+      POSTGRES_PASSWORD: persona_password
+      POSTGRES_DB: persona_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U persona -d persona_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── FastAPI 백엔드 ─────────────────────────────────────────
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file: ./backend/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://persona:persona_password@db:5432/persona_db
+      ALLOWED_ORIGINS: http://localhost,http://localhost:80
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend/static:/app/static
+
+  # ── React 프론트엔드 ───────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:8000/api/v1
+        VITE_WS_URL: ws://localhost:8000/api/v1
+        VITE_BACKEND_URL: http://localhost:8000
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
