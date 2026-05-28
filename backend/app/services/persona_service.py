@@ -1,11 +1,15 @@
 # ── 임포트 ────────────────────────────────────────────────
+import json
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc, asc  # desc/asc: 내림차순/오름차순 정렬
 from sqlalchemy.orm import selectinload
 from fastapi import HTTPException, status
+from groq import AsyncGroq
 
+from app.core.config import settings
 from app.models.persona import Persona
 from app.models.user import User
+from app.models.collection import Collection, CollectionPersona
 from app.schemas.persona import PersonaCreate, PersonaUpdate
 
 
@@ -48,6 +52,58 @@ def build_system_prompt(
     return prompt
 
 
+# ── AI 기반 컬렉션 자동 분류 ──────────────────────────────
+async def _auto_classify(db: AsyncSession, persona: Persona) -> None:
+    """공개 페르소나를 Groq AI로 분석해 적합한 컬렉션에 자동 추가."""
+    result = await db.execute(select(Collection).order_by(Collection.id))
+    collections = result.scalars().all()
+    if not collections:
+        return
+
+    col_list = "\n".join(f"{c.id}: {c.title} - {c.description or ''}" for c in collections)
+    prompt = (
+        f"AI 페르소나 정보:\n"
+        f"- 이름: {persona.name}\n"
+        f"- 성격: {persona.personality}\n"
+        f"- 태그: {persona.tags or '없음'}\n\n"
+        f"컬렉션 목록 (id: 제목 - 설명):\n{col_list}\n\n"
+        "위 페르소나가 어울리는 컬렉션 id를 JSON 배열로만 반환하세요. "
+        "없으면 빈 배열 []을 반환하세요. 다른 텍스트는 쓰지 마세요.\n"
+        "예시: [3, 7]"
+    )
+
+    try:
+        client = AsyncGroq(api_key=settings.GROQ_API_KEY)
+        res = await client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": "당신은 AI 페르소나 분류 전문가입니다. JSON 배열만 반환하세요."},
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=100,
+            temperature=0.1,
+        )
+        text = res.choices[0].message.content or "[]"
+        start, end = text.find("["), text.rfind("]") + 1
+        col_ids: list[int] = json.loads(text[start:end]) if start != -1 else []
+    except Exception:
+        return
+
+    valid_ids = {c.id for c in collections}
+    for col_id in col_ids:
+        if col_id not in valid_ids:
+            continue
+        exists = await db.execute(
+            select(CollectionPersona).where(
+                CollectionPersona.collection_id == col_id,
+                CollectionPersona.persona_id == persona.id,
+            )
+        )
+        if not exists.scalar_one_or_none():
+            db.add(CollectionPersona(collection_id=col_id, persona_id=persona.id))
+    await db.flush()
+
+
 # ── 페르소나 생성 ──────────────────────────────────────────
 async def create_persona(
     db: AsyncSession,
@@ -76,9 +132,13 @@ async def create_persona(
         tags=persona_data.tags,
     )
 
-    db.add(new_persona)          # INSERT 준비
-    await db.flush()             # INSERT 실행 + id 채우기
-    await db.refresh(new_persona)  # DB 최신 상태 반영 (created_at 등)
+    db.add(new_persona)
+    await db.flush()
+    await db.refresh(new_persona)
+
+    # 공개 페르소나면 AI로 적합한 컬렉션에 자동 추가
+    if new_persona.is_public:
+        await _auto_classify(db, new_persona)
 
     return new_persona
 
@@ -168,6 +228,10 @@ async def update_persona(
 
     await db.flush()
     await db.refresh(persona)
+
+    # 비공개 → 공개로 바뀐 경우 AI 자동 분류
+    if update_fields.get("is_public") is True:
+        await _auto_classify(db, persona)
 
     return persona
 
