@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, delete
+from sqlalchemy.orm import selectinload
 
 from app.db.database import get_db
 from app.models.collection import Collection, CollectionPersona
@@ -55,6 +56,7 @@ async def get_collection(collection_id: int, db: AsyncSession = Depends(get_db))
         select(Persona)
         .join(CollectionPersona, CollectionPersona.persona_id == Persona.id)
         .where(CollectionPersona.collection_id == collection_id)
+        .options(selectinload(Persona.user))
         .order_by(CollectionPersona.added_at.desc())
     )
     personas = cp_result.scalars().all()
