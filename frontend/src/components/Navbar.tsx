@@ -32,17 +32,21 @@ export default function Navbar() {
   }, [])
 
   const isActive = (path: string) => location.pathname === path
+  const isActivePrefix = (prefix: string) => location.pathname.startsWith(prefix)
 
-  const navLink = (path: string): React.CSSProperties => ({
-    fontSize: '0.9375rem',
-    color: isActive(path) ? '#6366f1' : c.textLabel,
-    fontWeight: isActive(path) ? 600 : 500,
-    textDecoration: 'none',
-    padding: '0.375rem 0.75rem',
-    borderRadius: '8px',
-    background: isActive(path) ? (c.isDark ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.08)') : 'transparent',
-    transition: 'background 0.15s',
-  })
+  const navLink = (path: string, prefix?: string): React.CSSProperties => {
+    const active = prefix ? isActivePrefix(prefix) : isActive(path)
+    return {
+      fontSize: '0.9375rem',
+      color: active ? '#6366f1' : c.textLabel,
+      fontWeight: active ? 600 : 500,
+      textDecoration: 'none',
+      padding: '0.375rem 0.75rem',
+      borderRadius: '8px',
+      background: active ? (c.isDark ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.08)') : 'transparent',
+      transition: 'background 0.15s',
+    }
+  }
 
   return (
     <>
@@ -63,6 +67,7 @@ export default function Navbar() {
               {/* 중앙 네비 링크 */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.125rem', flex: 1, paddingLeft: '1.5rem' }}>
                 {user && <Link to="/marketplace" style={navLink('/marketplace')}>마켓</Link>}
+                <Link to="/collections" style={navLink('/collections', '/collections')}>컬렉션</Link>
                 {user && <Link to="/my" style={navLink('/my')}>내 페르소나</Link>}
                 {user && <Link to="/favorites" style={navLink('/favorites')}>즐겨찾기</Link>}
                 {user && <Link to="/conversations" style={navLink('/conversations')}>대화 목록</Link>}
@@ -168,6 +173,7 @@ export default function Navbar() {
               )}
 
               <MenuLink to="/marketplace" label="마켓플레이스" icon="🛍️" c={c} active={isActive('/marketplace')} />
+              <MenuLink to="/collections" label="컬렉션" icon="✨" c={c} active={location.pathname.startsWith('/collections')} />
               {user && <MenuLink to="/my" label="내 페르소나" icon="🤖" c={c} active={isActive('/my')} />}
               {user && <MenuLink to="/favorites" label="즐겨찾기" icon="♥" c={c} active={isActive('/favorites')} />}
               {user && <MenuLink to="/conversations" label="대화 목록" icon="💬" c={c} active={isActive('/conversations')} />}
