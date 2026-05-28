@@ -1,5 +1,22 @@
+import re
 from pydantic import BaseModel, field_validator
 from datetime import datetime
+
+# 한자·히라가나·가타카나 등 허용하지 않는 문자 범위
+_HANJA_RE = re.compile(
+    r"[一-鿿"   # CJK Unified Ideographs (한자)
+    r"㐀-䶿"    # CJK Extension A
+    r"぀-ゟ"    # Hiragana
+    r"゠-ヿ"    # Katakana
+    r"豈-﫿"    # CJK Compatibility Ideographs
+    r"]"
+)
+
+def _check_no_hanja(v: str) -> str:
+    m = _HANJA_RE.search(v)
+    if m:
+        raise ValueError(f"한자·일본어 문자는 사용할 수 없어요. (감지된 문자: '{m.group()}')")
+    return v
 
 
 class PersonaCreate(BaseModel):
@@ -19,7 +36,7 @@ class PersonaCreate(BaseModel):
             raise ValueError("캐릭터 이름을 입력해주세요.")
         if len(v) > 50:
             raise ValueError("캐릭터 이름은 50자 이하여야 합니다.")
-        return v
+        return _check_no_hanja(v)
 
     @field_validator("personality")
     @classmethod
@@ -27,7 +44,14 @@ class PersonaCreate(BaseModel):
         v = v.strip()
         if len(v) < 10:
             raise ValueError("성격 설명을 10자 이상 입력해주세요.")
-        return v
+        return _check_no_hanja(v)
+
+    @field_validator("background", "speech_style", "tags")
+    @classmethod
+    def text_fields_no_hanja(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        return _check_no_hanja(v)
 
 
 class PersonaUpdate(BaseModel):
@@ -49,7 +73,7 @@ class PersonaUpdate(BaseModel):
             raise ValueError("캐릭터 이름을 입력해주세요.")
         if len(v) > 50:
             raise ValueError("캐릭터 이름은 50자 이하여야 합니다.")
-        return v
+        return _check_no_hanja(v)
 
     @field_validator("personality")
     @classmethod
@@ -59,7 +83,14 @@ class PersonaUpdate(BaseModel):
         v = v.strip()
         if len(v) < 10:
             raise ValueError("성격 설명을 10자 이상 입력해주세요.")
-        return v
+        return _check_no_hanja(v)
+
+    @field_validator("background", "speech_style", "tags")
+    @classmethod
+    def text_fields_no_hanja(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        return _check_no_hanja(v)
 
 
 class PersonaResponse(BaseModel):
