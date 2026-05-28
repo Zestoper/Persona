@@ -11,23 +11,20 @@ from app.models.message import Message
 from app.models.persona import Persona
 from app.models.user import User
 
-# 한자·일본어·러시아어 등 비허용 문자 제거 (한글·영어·공백·기호만 허용)
-# \uXXXX 이스케이프로 작성해 파일 인코딩 이슈 방지
-_FOREIGN_RE = re.compile(
-    "[一-鿿"    # CJK Unified Ideographs (한자 기본)
-    "㐀-䶿"     # CJK Extension A
-    " 0-⩭F"   # CJK Extension B (surrogate pair range — skipped by re on narrow builds)
-    "぀-ゟ"     # Hiragana (히라가나)
-    "゠-ヿ"     # Katakana (가타카나)
-    "Ѐ-ӿ"     # Cyrillic (러시아어)
-    "؀-ۿ"     # Arabic (아랍어)
-    "　-〿"     # CJK Symbols and Punctuation
-    "豈-﫿"     # CJK Compatibility Ideographs
+# 화이트리스트 방식: 한글·영어·숫자·기본 기호만 남기고 나머지 전부 제거
+_ALLOWED_RE = re.compile(
+    "[^\uAC00-\uD7A3"   # 완성형 한글 (가-힣)
+    "\u1100-\u11FF"      # 한글 자모
+    "\u3130-\u318F"      # 한글 호환 자모
+    " -~"                 # ASCII 기본 (영문·숫자·구두점·공백)
+    "\u2018-\u201F"      # 따옴표류
+    "\u2026\u2013\u2014" # 줄임표·대시
+    "\n\r\t"             # 줄바꿈·탭
     "]+"
 )
 
 def _strip_foreign_scripts(text: str) -> str:
-    return _FOREIGN_RE.sub("", text)
+    return _ALLOWED_RE.sub("", text)
 
 
 # ── 대화방 가져오기 (없으면 새로 생성) ────────────────────

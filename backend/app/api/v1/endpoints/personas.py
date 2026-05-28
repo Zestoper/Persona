@@ -16,6 +16,7 @@ from app.schemas.persona import (
     PersonaGenerateRequest, PersonaGenerateResponse,
 )
 from app.services import persona_service
+from app.services.chat_service import _strip_foreign_scripts
 
 AVATAR_DIR = Path(__file__).parent.parent.parent.parent / "static" / "avatars"
 ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
@@ -110,9 +111,9 @@ async def generate_persona_fields(
     except Exception:
         parsed = {}
     return PersonaGenerateResponse(
-        personality=parsed.get("personality", "활기차고 긍정적인 성격의 친구같은 캐릭터"),
-        background=parsed.get("background", "평범한 일상을 보내며 새로운 경험을 즐기는 사람"),
-        speech_style=parsed.get("speech_style", "친근한 반말"),
+        personality=_strip_foreign_scripts(parsed.get("personality", "활기차고 긍정적인 성격의 친구같은 캐릭터")),
+        background=_strip_foreign_scripts(parsed.get("background", "평범한 일상을 보내며 새로운 경험을 즐기는 사람")),
+        speech_style=_strip_foreign_scripts(parsed.get("speech_style", "친근한 반말")),
     )
 
 
