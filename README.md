@@ -165,3 +165,49 @@ docker run -d \
 docker exec -it persona-postgres psql -U postgres -d persona_db \
   -c "UPDATE users SET is_admin = true WHERE email = '이메일주소';"
 ```
+
+## Docker Compose로 전체 스택 실행
+
+```bash
+# 환경변수 설정 (Groq API 키 등)
+cp backend/.env.example backend/.env
+# backend/.env 파일을 열어 GROQ_API_KEY 입력
+
+# 빌드 및 실행 (DB + 백엔드 + 프론트엔드 전체)
+docker compose up --build
+
+# 백그라운드 실행
+docker compose up -d --build
+```
+
+브라우저에서 `http://localhost` 접속
+
+### 관리자 계정 설정 (Docker Compose)
+
+```bash
+docker compose exec db psql -U persona -d persona_db \
+  -c "UPDATE users SET is_admin = true WHERE email = '이메일주소';"
+```
+
+## Railway 배포
+
+Railway는 백엔드와 프론트엔드를 별도 서비스로 배포합니다.
+
+### 1. 백엔드 배포
+
+1. [Railway](https://railway.app) 프로젝트 생성
+2. GitHub 저장소 연결 → **Root Directory**: `backend`
+3. PostgreSQL 플러그인 추가 → `DATABASE_URL` 자동 설정됨
+4. 환경변수 설정:
+   - `SECRET_KEY` — 랜덤 시크릿 키
+   - `GROQ_API_KEY` — Groq API 키
+   - `ALLOWED_ORIGINS` — 프론트엔드 배포 URL
+   - `DEBUG=False`
+
+### 2. 프론트엔드 배포
+
+1. Railway 새 서비스 추가 → **Root Directory**: `frontend`
+2. 빌드 환경변수 설정:
+   - `VITE_API_URL` — 백엔드 Railway URL + `/api/v1`
+   - `VITE_WS_URL` — `wss://` + 백엔드 Railway 도메인 + `/api/v1`
+   - `VITE_BACKEND_URL` — 백엔드 Railway URL
