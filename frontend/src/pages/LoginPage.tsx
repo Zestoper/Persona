@@ -1,8 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import axios from 'axios'
 import api from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { useThemeColors } from '../hooks/useThemeColors'
+
+type ServerStatus = 'checking' | 'ok' | 'error'
+
+const SERVER_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/v1').replace('/api/v1', '')
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -12,6 +17,13 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [serverStatus, setServerStatus] = useState<ServerStatus>('checking')
+
+  useEffect(() => {
+    axios.get(`${SERVER_BASE}/health`, { timeout: 5000 })
+      .then(() => setServerStatus('ok'))
+      .catch(() => setServerStatus('error'))
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -116,6 +128,29 @@ export default function LoginPage() {
               회원가입
             </Link>
           </p>
+
+          {/* 서버 연결 상태 */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.375rem', marginTop: '1.25rem' }}>
+            {serverStatus === 'checking' && (
+              <>
+                <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#f59e0b', display: 'inline-block', animation: 'blink 1s ease-in-out infinite' }} />
+                <span style={{ fontSize: '0.75rem', color: c.textMuted }}>서버 연결 중...</span>
+              </>
+            )}
+            {serverStatus === 'ok' && (
+              <>
+                <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
+                <span style={{ fontSize: '0.75rem', color: '#22c55e', fontWeight: 500 }}>서버 연결됐어요</span>
+              </>
+            )}
+            {serverStatus === 'error' && (
+              <>
+                <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#ef4444', display: 'inline-block' }} />
+                <span style={{ fontSize: '0.75rem', color: '#ef4444' }}>서버에 연결할 수 없어요</span>
+              </>
+            )}
+          </div>
+          <style>{`@keyframes blink { 0%,100% { opacity:1 } 50% { opacity:0.3 } }`}</style>
         </div>
       </div>
     </div>

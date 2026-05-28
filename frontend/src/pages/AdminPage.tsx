@@ -52,7 +52,26 @@ interface AdminReport {
   created_at: string
 }
 
-type Tab = 'stats' | 'reports' | 'users' | 'personas'
+interface Collection {
+  id: number
+  title: string
+  description: string | null
+  emoji: string | null
+  is_featured: boolean
+  persona_count: number
+  created_at: string
+}
+
+interface CollectionPersona {
+  id: number
+  name: string
+  is_public: boolean
+  chat_count: number
+  tags: string | null
+  creator_nickname: string | null
+}
+
+type Tab = 'stats' | 'reports' | 'users' | 'personas' | 'collections'
 
 const STATUS_LABEL: Record<string, { label: string; color: string; bg: string }> = {
   pending:  { label: '검토 대기', color: '#d97706', bg: '#fef3c7' },
@@ -72,11 +91,19 @@ export default function AdminPage() {
   const [users, setUsers] = useState<AdminUser[]>([])
   const [personas, setPersonas] = useState<AdminPersona[]>([])
   const [reports, setReports] = useState<AdminReport[]>([])
+  const [collections, setCollections] = useState<Collection[]>([])
   const [reportFilter, setReportFilter] = useState('')
   const [userSearch, setUserSearch] = useState('')
   const [personaSearch, setPersonaSearch] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [confirmState, setConfirmState] = useState<{ message: string; subMessage: string; onConfirm: () => void } | null>(null)
+
+  // 컬렉션 관리 상태
+  const [newCollection, setNewCollection] = useState({ title: '', description: '', emoji: '📚' })
+  const [expandedColId, setExpandedColId] = useState<number | null>(null)
+  const [colPersonas, setColPersonas] = useState<CollectionPersona[]>([])
+  const [addSearch, setAddSearch] = useState('')
+  const [colLoading, setColLoading] = useState(false)
 
   // 관리자 아닌 경우 차단
   useEffect(() => {
@@ -89,6 +116,7 @@ export default function AdminPage() {
     if (tab === 'users') loadUsers()
     if (tab === 'personas') loadPersonas()
     if (tab === 'reports') loadReports(reportFilter)
+    if (tab === 'collections') { loadCollections(); if (personas.length === 0) loadPersonas() }
   }, [tab, user])
 
   useEffect(() => {
@@ -114,6 +142,68 @@ export default function AdminPage() {
     setIsLoading(true)
     try { setReports((await api.get('/admin/reports', { params: statusFilter ? { status_filter: statusFilter } : {} })).data) }
     finally { setIsLoading(false) }
+  }
+
+  const loadCollections = async () => {
+    setIsLoading(true)
+    try { setCollections((await api.get('/collections')).data) } finally { setIsLoading(false) }
+  }
+
+  const handleCreateCollection = async () => {
+    if (!newCollection.title.trim()) { showToast('제목을 입력해주세요', 'error'); return }
+    try {
+      const res = await api.post('/collections', newCollection)
+      setCollections((prev) => [res.data, ...prev])
+      setNewCollection({ title: '', description: '', emoji: '📚' })
+      showToast('컬렉션이 생성됐어요', 'success')
+    } catch { showToast('생성에 실패했어요', 'error') }
+  }
+
+  const handleDeleteCollection = (colId: number, title: string) => {
+    setConfirmState({
+      message: `"${title}" 컬렉션을 삭제할까요?`,
+      subMessage: '컬렉션에 연결된 페르소나 관계도 모두 삭제됩니다.',
+      onConfirm: async () => {
+        try {
+          await api.delete(`/collections/${colId}`)
+          setCollections((prev) => prev.filter((c) => c.id !== colId))
+          if (expandedColId === colId) setExpandedColId(null)
+          showToast('삭제됐어요', 'success')
+        } catch { showToast('삭제에 실패했어요', 'error') }
+        setConfirmState(null)
+      },
+    })
+  }
+
+  const handleExpandCollection = async (colId: number) => {
+    if (expandedColId === colId) { setExpandedColId(null); return }
+    setExpandedColId(colId)
+    setColLoading(true)
+    try {
+      const res = await api.get(`/collections/${colId}`)
+      setColPersonas(res.data.personas)
+    } finally { setColLoading(false) }
+  }
+
+  const handleAddPersona = async (colId: number, personaId: number) => {
+    try {
+      await api.post(`/collections/${colId}/personas/${personaId}`)
+      const p = personas.find((p) => p.id === personaId)
+      if (p) setColPersonas((prev) => [{ id: p.id, name: p.name, is_public: p.is_public, chat_count: p.chat_count, tags: p.tags, creator_nickname: p.user_nickname }, ...prev])
+      setCollections((prev) => prev.map((c) => c.id === colId ? { ...c, persona_count: c.persona_count + 1 } : c))
+      showToast('추가됐어요', 'success')
+    } catch (e: any) {
+      showToast(e.response?.data?.detail || '추가에 실패했어요', 'error')
+    }
+  }
+
+  const handleRemovePersona = async (colId: number, personaId: number) => {
+    try {
+      await api.delete(`/collections/${colId}/personas/${personaId}`)
+      setColPersonas((prev) => prev.filter((p) => p.id !== personaId))
+      setCollections((prev) => prev.map((c) => c.id === colId ? { ...c, persona_count: Math.max(0, c.persona_count - 1) } : c))
+      showToast('제거됐어요', 'info')
+    } catch { showToast('제거에 실패했어요', 'error') }
   }
 
   const handleToggleUser = async (userId: number) => {
@@ -171,10 +261,11 @@ export default function AdminPage() {
   }
 
   const TABS: { key: Tab; label: string }[] = [
-    { key: 'stats',    label: '통계' },
-    { key: 'reports',  label: `신고${stats ? ` (${stats.pending_reports})` : ''}` },
-    { key: 'users',    label: '유저' },
-    { key: 'personas', label: '페르소나' },
+    { key: 'stats',       label: '통계' },
+    { key: 'reports',     label: `신고${stats ? ` (${stats.pending_reports})` : ''}` },
+    { key: 'users',       label: '유저' },
+    { key: 'personas',    label: '페르소나' },
+    { key: 'collections', label: '컬렉션' },
   ]
 
   if (!user?.is_admin) return null
@@ -426,6 +517,135 @@ export default function AdminPage() {
             )}
           </>
         )}
+        {/* 컬렉션 탭 */}
+        {!isLoading && tab === 'collections' && (
+          <>
+            {/* 새 컬렉션 만들기 */}
+            <div style={{ background: c.bgCard, borderRadius: '16px', padding: '1.25rem', border: `1px solid ${c.border}`, marginBottom: '1.25rem' }}>
+              <p style={{ fontWeight: 700, color: c.textPrimary, margin: '0 0 1rem 0', fontSize: '0.9375rem' }}>새 컬렉션 만들기</p>
+              <div style={{ display: 'flex', gap: '0.625rem', flexWrap: 'wrap' }}>
+                <input
+                  value={newCollection.emoji}
+                  onChange={(e) => setNewCollection((p) => ({ ...p, emoji: e.target.value }))}
+                  placeholder="이모지"
+                  style={{ width: '72px', padding: '0.625rem 0.75rem', borderRadius: '10px', border: `1.5px solid ${c.borderStrong}`, background: c.bgInput, color: c.textPrimary, fontSize: '1.125rem', outline: 'none', textAlign: 'center', boxSizing: 'border-box' }}
+                />
+                <input
+                  value={newCollection.title}
+                  onChange={(e) => setNewCollection((p) => ({ ...p, title: e.target.value }))}
+                  placeholder="컬렉션 제목 (예: 치매 예방)"
+                  style={{ flex: 1, minWidth: '160px', padding: '0.625rem 1rem', borderRadius: '10px', border: `1.5px solid ${c.borderStrong}`, background: c.bgInput, color: c.textPrimary, fontSize: '0.9375rem', outline: 'none', boxSizing: 'border-box' }}
+                />
+                <input
+                  value={newCollection.description}
+                  onChange={(e) => setNewCollection((p) => ({ ...p, description: e.target.value }))}
+                  placeholder="설명 (선택)"
+                  style={{ flex: 2, minWidth: '200px', padding: '0.625rem 1rem', borderRadius: '10px', border: `1.5px solid ${c.borderStrong}`, background: c.bgInput, color: c.textPrimary, fontSize: '0.9375rem', outline: 'none', boxSizing: 'border-box' }}
+                />
+                <button onClick={handleCreateCollection} style={{ padding: '0.625rem 1.25rem', borderRadius: '10px', background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', color: 'white', fontWeight: 700, fontSize: '0.9375rem', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                  + 만들기
+                </button>
+              </div>
+            </div>
+
+            {collections.length === 0
+              ? <EmptyState icon="✨" text="컬렉션이 없어요" c={c} />
+              : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {collections.map((col) => {
+                    const isExpanded = expandedColId === col.id
+                    const alreadyIds = new Set(colPersonas.map((p) => p.id))
+                    const filteredToAdd = personas.filter((p) => {
+                      if (alreadyIds.has(p.id)) return false
+                      const q = addSearch.toLowerCase()
+                      return !q || p.name.toLowerCase().includes(q) || p.user_nickname.toLowerCase().includes(q)
+                    })
+
+                    return (
+                      <div key={col.id} style={{ background: c.bgCard, borderRadius: '16px', border: `1px solid ${isExpanded ? '#6366f1' : c.border}`, overflow: 'hidden', transition: 'border-color 0.15s' }}>
+                        {/* 컬렉션 헤더 */}
+                        <div style={{ padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: 0 }}>
+                            <span style={{ fontSize: '1.5rem' }}>{col.emoji || '📚'}</span>
+                            <div>
+                              <span style={{ fontWeight: 700, color: c.textPrimary }}>{col.title}</span>
+                              {col.description && <p style={{ fontSize: '0.8125rem', color: c.textMuted, margin: '0.125rem 0 0 0' }}>{col.description}</p>}
+                            </div>
+                            <span style={{ fontSize: '0.75rem', color: c.textMuted, whiteSpace: 'nowrap' }}>페르소나 {col.persona_count}개</span>
+                          </div>
+                          <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+                            <button onClick={() => handleExpandCollection(col.id)} style={actionBtn(isExpanded ? '#7c3aed' : '#4f46e5', isExpanded ? '#ede9fe' : '#eef2ff')}>
+                              {isExpanded ? '닫기' : '페르소나 관리'}
+                            </button>
+                            <button onClick={() => handleDeleteCollection(col.id, col.title)} style={actionBtn('#dc2626', '#fee2e2')}>삭제</button>
+                          </div>
+                        </div>
+
+                        {/* 확장 패널 */}
+                        {isExpanded && (
+                          <div style={{ borderTop: `1px solid ${c.border}`, padding: '1rem 1.25rem', background: c.bgSofter }}>
+                            {colLoading ? (
+                              <p style={{ color: c.textMuted, fontSize: '0.875rem', margin: 0 }}>불러오는 중...</p>
+                            ) : (
+                              <>
+                                {/* 현재 컬렉션 안 페르소나 */}
+                                <p style={{ fontWeight: 600, color: c.textPrimary, margin: '0 0 0.625rem 0', fontSize: '0.875rem' }}>
+                                  현재 포함된 페르소나 ({colPersonas.length})
+                                </p>
+                                {colPersonas.length === 0
+                                  ? <p style={{ fontSize: '0.8125rem', color: c.textMuted, marginBottom: '1rem' }}>아직 없어요. 아래에서 추가하세요.</p>
+                                  : (
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.25rem' }}>
+                                      {colPersonas.map((p) => (
+                                        <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: c.bgCard, border: `1px solid ${c.border}`, borderRadius: '999px', padding: '0.25rem 0.75rem 0.25rem 0.875rem', fontSize: '0.8125rem' }}>
+                                          <span style={{ color: c.textPrimary, fontWeight: 500 }}>{p.name}</span>
+                                          <button
+                                            onClick={() => handleRemovePersona(col.id, p.id)}
+                                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '0.875rem', padding: '0 0 0 0.125rem', lineHeight: 1 }}
+                                          >
+                                            ×
+                                          </button>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )
+                                }
+
+                                {/* 페르소나 추가 */}
+                                <p style={{ fontWeight: 600, color: c.textPrimary, margin: '0 0 0.5rem 0', fontSize: '0.875rem' }}>페르소나 추가</p>
+                                <input
+                                  value={addSearch}
+                                  onChange={(e) => setAddSearch(e.target.value)}
+                                  placeholder="이름으로 검색..."
+                                  style={{ width: '100%', padding: '0.5rem 0.875rem', borderRadius: '8px', border: `1.5px solid ${c.borderStrong}`, background: c.bgInput, color: c.textPrimary, fontSize: '0.875rem', outline: 'none', marginBottom: '0.625rem', boxSizing: 'border-box' }}
+                                />
+                                <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
+                                  {filteredToAdd.length === 0
+                                    ? <p style={{ fontSize: '0.8125rem', color: c.textMuted, margin: 0 }}>추가할 페르소나가 없어요</p>
+                                    : filteredToAdd.slice(0, 20).map((p) => (
+                                      <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.375rem 0.75rem', borderRadius: '8px', background: c.bgCard, border: `1px solid ${c.border}` }}>
+                                        <div>
+                                          <span style={{ fontWeight: 500, color: c.textPrimary, fontSize: '0.875rem' }}>{p.name}</span>
+                                          <span style={{ color: c.textMuted, fontSize: '0.75rem', marginLeft: '0.5rem' }}>{p.user_nickname}</span>
+                                        </div>
+                                        <button onClick={() => handleAddPersona(col.id, p.id)} style={actionBtn('#059669', '#d1fae5')}>추가</button>
+                                      </div>
+                                    ))
+                                  }
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            }
+          </>
+        )}
+
       </div>
     </div>
     </>
