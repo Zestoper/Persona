@@ -86,10 +86,28 @@ export default function ChatPage() {
     const ws = new WebSocket(`${import.meta.env.VITE_WS_URL ?? 'ws://localhost:8000/api/v1'}/chat/${personaId}?token=${token}`)
     wsRef.current = ws
 
+    // 25초마다 ping 전송 — Render 프록시 유휴 타임아웃 방지
+    const pingInterval = setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send('__ping__')
+      }
+    }, 25000)
+
     ws.onopen = () => setIsConnected(true)
+
+    ws.onerror = () => {
+      intentionalCloseRef.current = true
+      showToast('서버에 연결할 수 없어요. 잠시 후 다시 시도해주세요.', 'error')
+      navigate(-1)
+    }
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data)
+
+      if (data.type === 'pong') {
+        // heartbeat 응답 — 무시
+        return
+      }
 
       if (data.type === 'connected') {
         wasConnectedRef.current = true
@@ -159,6 +177,7 @@ export default function ChatPage() {
       }
     }
     return () => {
+      clearInterval(pingInterval)
       if (expiryTimer) clearTimeout(expiryTimer)
       intentionalCloseRef.current = true
       ws.close()
