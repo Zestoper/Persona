@@ -17,7 +17,7 @@ class Settings(BaseSettings):
 
     # ── JWT 인증 ───────────────────────────────────────────
     SECRET_KEY: str              # JWT 서명에 쓸 비밀 키 (.env에서 읽음)
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30  # 토큰 유효 시간 (기본 30분)
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080  # 토큰 유효 시간 (기본 7일)
     ALGORITHM: str = "HS256"     # JWT 서명 알고리즘 (HMAC + SHA256)
 
     # ── Groq AI ───────────────────────────────────────────

@@ -95,8 +95,11 @@ async def websocket_chat(
             # ── 사용자 메시지 수신 대기 ───────────────────
             user_input = await websocket.receive_text()  # 브라우저에서 문자 올 때까지 대기
 
-            # ── 빈 메시지 무시 ────────────────────────────
+            # ── 빈 메시지 / ping 처리 ────────────────────────
             if not user_input.strip():
+                continue
+            if user_input == "__ping__":
+                await websocket.send_text(json.dumps({"type": "pong"}))
                 continue
 
             # ── 사용자 메시지 DB 저장 ─────────────────────
