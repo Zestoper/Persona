@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import { useThemeColors } from '../hooks/useThemeColors'
+import { useToast } from '../context/ToastContext'
 
 const STYLES = [
   { id: 'lorelei',    label: '일러스트' },
@@ -20,6 +21,7 @@ function dicebearUrl(style: string, seed: string) {
 export default function CreatePersonaPage() {
   const navigate = useNavigate()
   const c = useThemeColors()
+  const { showToast } = useToast()
 
   const [form, setForm] = useState({
     name: '', personality: '', background: '', speech_style: '', is_public: false,
@@ -109,6 +111,11 @@ export default function CreatePersonaPage() {
         await api.post(`/personas/${personaId}/avatar`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         })
+      }
+
+      const autoCollections: string[] = res.data.auto_collections || []
+      if (autoCollections.length > 0) {
+        showToast(`✨ '${autoCollections.join(', ')}' 컬렉션에 자동으로 추가됐어요!`, 'success')
       }
 
       navigate(`/chat/${personaId}`)

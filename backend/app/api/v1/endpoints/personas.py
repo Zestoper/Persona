@@ -41,8 +41,13 @@ async def create_persona(
     """
     새 AI 페르소나를 생성합니다.
     입력한 성격/말투/배경을 바탕으로 System Prompt를 자동 생성합니다.
+    공개 페르소나는 AI가 자동으로 컬렉션에 분류하고 어느 컬렉션에 추가됐는지 반환합니다.
     """
-    return await persona_service.create_persona(db, persona_data, current_user)
+    persona = await persona_service.create_persona(db, persona_data, current_user)
+    auto_collections = await persona_service.get_persona_collection_titles(db, persona.id)
+    d = PersonaResponse.model_validate(persona).model_dump()
+    d["auto_collections"] = auto_collections
+    return PersonaResponse(**d)
 
 
 # ── 2. 내 페르소나 목록 조회 ───────────────────────────────
@@ -55,8 +60,15 @@ async def get_my_personas(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """내가 만든 페르소나 목록을 최신순으로 반환합니다."""
-    return await persona_service.get_my_personas(db, current_user)
+    """내가 만든 페르소나 목록을 최신순으로 반환합니다. 각 페르소나가 속한 컬렉션도 함께 반환합니다."""
+    personas = await persona_service.get_my_personas(db, current_user)
+    collections_map = await persona_service.get_personas_collection_map(db, [p.id for p in personas])
+    result = []
+    for p in personas:
+        d = PersonaListResponse.model_validate(p).model_dump()
+        d["my_collections"] = collections_map.get(p.id, [])
+        result.append(PersonaListResponse(**d))
+    return result
 
 
 # ── 3. 공개 페르소나 목록 (마켓플레이스) ──────────────────
@@ -145,8 +157,15 @@ async def update_persona(
     페르소나 정보를 수정합니다.
     본인 페르소나만 수정 가능합니다.
     성격/말투/배경이 바뀌면 System Prompt도 자동으로 재생성됩니다.
+    비공개 → 공개로 바뀌면 AI가 컬렉션에 자동 분류합니다.
     """
-    return await persona_service.update_persona(db, persona_id, update_data, current_user)
+    persona = await persona_service.update_persona(db, persona_id, update_data, current_user)
+    auto_collections: list[str] = []
+    if update_data.is_public is True:
+        auto_collections = await persona_service.get_persona_collection_titles(db, persona.id)
+    d = PersonaResponse.model_validate(persona).model_dump()
+    d["auto_collections"] = auto_collections
+    return PersonaResponse(**d)
 
 
 # ── 6. 페르소나 삭제 ────────────────────────────────────────

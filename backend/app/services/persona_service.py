@@ -286,6 +286,33 @@ async def fork_persona(
     return new_persona
 
 
+async def get_persona_collection_titles(db: AsyncSession, persona_id: int) -> list[str]:
+    """특정 페르소나가 속한 컬렉션 이름 목록 반환."""
+    result = await db.execute(
+        select(Collection.title)
+        .join(CollectionPersona, CollectionPersona.collection_id == Collection.id)
+        .where(CollectionPersona.persona_id == persona_id)
+        .order_by(Collection.id)
+    )
+    return list(result.scalars().all())
+
+
+async def get_personas_collection_map(db: AsyncSession, persona_ids: list[int]) -> dict[int, list[str]]:
+    """여러 페르소나의 컬렉션 이름을 한 번에 조회해 {persona_id: [title, ...]} 딕셔너리로 반환."""
+    if not persona_ids:
+        return {}
+    result = await db.execute(
+        select(CollectionPersona.persona_id, Collection.title)
+        .join(Collection, Collection.id == CollectionPersona.collection_id)
+        .where(CollectionPersona.persona_id.in_(persona_ids))
+        .order_by(CollectionPersona.persona_id, Collection.id)
+    )
+    mapping: dict[int, list[str]] = {}
+    for pid, title in result.all():
+        mapping.setdefault(pid, []).append(title)
+    return mapping
+
+
 async def get_public_personas(
     db: AsyncSession,
     skip: int = 0,

@@ -21,16 +21,21 @@
 | 기능 | 설명 |
 |---|---|
 | 페르소나 생성 | 이름·성격·배경스토리·말투를 입력하면 AI 시스템 프롬프트 자동 생성 |
+| AI 필드 자동 채우기 | 이름만 입력하면 Groq AI가 성격·배경·말투를 자동으로 제안 |
 | 실시간 스트리밍 채팅 | WebSocket 기반으로 AI 답변을 타이핑하듯 실시간 출력 |
 | 대화 기록 유지 | 페이지 새로고침 후에도 이전 대화가 그대로 유지 |
-| 마켓플레이스 | 공개 페르소나 탐색, 인기순/최신순 정렬, 이름 검색 |
+| 마켓플레이스 | 공개 페르소나 탐색, 인기순/최신순 정렬, 이름·태그 검색 |
+| 컬렉션 | 테마별로 큐레이션된 페르소나 묶음 (힐링·학습·건강·연애 등 19개+) |
+| AI 자동 컬렉션 분류 | 공개 페르소나 생성 시 Groq AI가 어울리는 컬렉션에 자동 추가 |
 | 페르소나 복사 | 공개 페르소나를 내 계정으로 포크(복사)하여 커스터마이징 |
 | 소셜 로그인 | 카카오·구글 OAuth2 소셜 로그인 지원 |
 | 아바타 시스템 | DiceBear 자동 생성 (7가지 스타일) 또는 직접 이미지 업로드 |
+| 즐겨찾기 | 마음에 드는 공개 페르소나를 즐겨찾기에 저장 |
 | 신고 기능 | 부적절한 페르소나 신고 및 관리자 처리 |
-| 관리자 페이지 | 통계 대시보드·신고 관리·유저 관리·페르소나 관리 |
+| 관리자 페이지 | 통계 대시보드·신고 관리·유저 관리·페르소나 관리·컬렉션 관리 |
 | 다크/라이트 모드 | 시스템 설정 연동 + 수동 전환 |
 | 모바일 반응형 | 햄버거 메뉴, 슬라이드 드로어 등 모바일 최적화 |
+| 서버 연결 상태 | 로그인 화면에서 백엔드 서버 연결 여부 실시간 표시 |
 
 ## 기술 스택
 
@@ -61,8 +66,10 @@
 | `/` | 랜딩 페이지 (서비스 소개, 데모 애니메이션) |
 | `/marketplace` | 마켓플레이스 (공개 페르소나 탐색) |
 | `/persona/:id` | 페르소나 상세 (소개·신고·복사) |
+| `/collections` | 컬렉션 목록 (테마별 큐레이션) |
+| `/collections/:id` | 컬렉션 상세 (소속 페르소나 목록) |
 | `/create` | 페르소나 만들기 |
-| `/my` | 내 페르소나 목록 |
+| `/my` | 내 페르소나 목록 (컬렉션 소속 배지 표시) |
 | `/edit/:id` | 페르소나 수정 |
 | `/chat/:id` | 페르소나와 채팅 |
 | `/conversations` | 내 대화 목록 |
@@ -76,19 +83,19 @@
 Persona/
 ├── backend/
 │   ├── app/
-│   │   ├── api/v1/endpoints/   # auth, personas, chat, reports, conversations, admin
-│   │   ├── models/             # User, Persona, Message, Conversation, Report, Favorite
+│   │   ├── api/v1/endpoints/   # auth, personas, chat, reports, conversations, admin, collections
+│   │   ├── models/             # User, Persona, Message, Conversation, Report, Favorite, Collection
 │   │   ├── schemas/            # Pydantic 스키마
-│   │   ├── services/           # 비즈니스 로직
+│   │   ├── services/           # 비즈니스 로직 (persona_service, chat_service)
 │   │   └── core/               # 설정, 보안, JWT
 │   └── requirements.txt
 └── frontend/
     └── src/
-        ├── pages/              # 페이지 컴포넌트 (12개)
-        ├── components/         # Navbar, PersonaAvatar 등 공통 컴포넌트
+        ├── pages/              # 페이지 컴포넌트 (14개)
+        ├── components/         # Navbar, PersonaCard, PersonaAvatar, Skeleton 등 공통 컴포넌트
         ├── context/            # AuthContext, ToastContext, ThemeContext
         ├── hooks/              # useThemeColors, useIsMobile
-        └── api/                # Axios 클라이언트
+        └── api/                # Axios 클라이언트 (401 자동 로그아웃)
 ```
 
 ## 실행 방법

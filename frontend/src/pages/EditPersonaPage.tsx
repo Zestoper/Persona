@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import api from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { useThemeColors } from '../hooks/useThemeColors'
+import { useToast } from '../context/ToastContext'
 
 const STYLES = [
   { id: 'lorelei',    label: '일러스트' },
@@ -23,6 +24,7 @@ export default function EditPersonaPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const c = useThemeColors()
+  const { showToast } = useToast()
 
   const [form, setForm] = useState({ name: '', personality: '', background: '', speech_style: '', is_public: false })
   const [tags, setTags] = useState<string[]>([])
@@ -96,7 +98,7 @@ export default function EditPersonaPage() {
     try {
       const avatarUrl = avatarFile ? null : (seed ? dicebearUrl(style, seed) : currentAvatarUrl)
       const tagsStr = tags.join(',') || null
-      await api.put(`/personas/${personaId}`, { ...form, avatar_url: avatarUrl, tags: tagsStr })
+      const res = await api.put(`/personas/${personaId}`, { ...form, avatar_url: avatarUrl, tags: tagsStr })
 
       if (avatarFile) {
         const formData = new FormData()
@@ -104,6 +106,11 @@ export default function EditPersonaPage() {
         await api.post(`/personas/${personaId}/avatar`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         })
+      }
+
+      const autoCollections: string[] = res.data.auto_collections || []
+      if (autoCollections.length > 0) {
+        showToast(`✨ '${autoCollections.join(', ')}' 컬렉션에 자동으로 추가됐어요!`, 'success')
       }
 
       navigate('/my')
