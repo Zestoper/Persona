@@ -27,6 +27,7 @@ export default function MarketplacePage() {
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
   const [tagFilter, setTagFilter] = useState('')
+  const [tagInput, setTagInput] = useState('')
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
   const [favoritedIds, setFavoritedIds] = useState<Set<number>>(new Set())
   const [favoritePersonas, setFavoritePersonas] = useState<Persona[]>([])
@@ -75,11 +76,23 @@ export default function MarketplacePage() {
     e.preventDefault()
     setSearch(searchInput)
     setTagFilter('')
+    setTagInput('')
     setShowFavoritesOnly(false)
   }
 
   const handleTagFilter = (tag: string) => {
-    setTagFilter(tag === tagFilter ? '' : tag)
+    const next = tag === tagFilter ? '' : tag
+    setTagFilter(next)
+    setTagInput(next)
+    setSearch('')
+    setSearchInput('')
+    setShowFavoritesOnly(false)
+  }
+
+  const handleTagSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const t = tagInput.trim()
+    setTagFilter(t)
     setSearch('')
     setSearchInput('')
     setShowFavoritesOnly(false)
@@ -144,21 +157,61 @@ export default function MarketplacePage() {
       <div style={{ maxWidth: '1024px', margin: '0 auto', padding: isMobile ? '1.25rem 1rem' : '2rem 1.5rem' }}>
 
         {/* 태그 필터 */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginBottom: '1rem' }}>
-          {POPULAR_TAGS.map((tag) => (
-            <button
-              key={tag}
-              onClick={() => handleTagFilter(tag)}
+        <div style={{ marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginBottom: '0.5rem' }}>
+            {POPULAR_TAGS.map((tag) => (
+              <button
+                key={tag}
+                onClick={() => handleTagFilter(tag)}
+                style={{
+                  padding: '0.3rem 0.75rem', borderRadius: '999px', fontSize: '0.8125rem', fontWeight: 600,
+                  border: 'none', cursor: 'pointer',
+                  background: tagFilter === tag ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : c.bgSoft,
+                  color: tagFilter === tag ? 'white' : c.textSecondary,
+                }}
+              >
+                #{tag}
+              </button>
+            ))}
+          </div>
+          <form onSubmit={handleTagSearch} style={{ display: 'flex', gap: '0.375rem', maxWidth: '320px' }}>
+            <input
+              type="text"
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              placeholder="태그 직접 검색 (예: 힐링, MBTI)"
               style={{
-                padding: '0.3rem 0.75rem', borderRadius: '999px', fontSize: '0.8125rem', fontWeight: 600,
+                flex: 1, padding: '0.375rem 0.75rem', borderRadius: '999px', fontSize: '0.8125rem',
+                border: `1.5px solid ${tagFilter && !POPULAR_TAGS.includes(tagFilter) ? '#6366f1' : c.borderStrong}`,
+                outline: 'none', background: c.bgInput, color: c.textPrimary,
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#6366f1'}
+              onBlur={(e) => e.target.style.borderColor = tagFilter && !POPULAR_TAGS.includes(tagFilter) ? '#6366f1' : c.borderStrong}
+            />
+            <button
+              type="submit"
+              style={{
+                padding: '0.375rem 0.75rem', borderRadius: '999px', fontSize: '0.8125rem', fontWeight: 600,
                 border: 'none', cursor: 'pointer',
-                background: tagFilter === tag ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : c.bgSoft,
-                color: tagFilter === tag ? 'white' : c.textSecondary,
+                background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white',
               }}
             >
-              #{tag}
+              검색
             </button>
-          ))}
+            {tagFilter && (
+              <button
+                type="button"
+                onClick={() => { setTagFilter(''); setTagInput('') }}
+                style={{
+                  padding: '0.375rem 0.625rem', borderRadius: '999px', fontSize: '0.8125rem',
+                  border: `1.5px solid ${c.borderStrong}`, cursor: 'pointer',
+                  background: c.bgCard, color: c.textMuted,
+                }}
+              >
+                ✕
+              </button>
+            )}
+          </form>
         </div>
 
         {/* 정렬 탭 + 즐겨찾기 */}
