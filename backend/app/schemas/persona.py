@@ -108,6 +108,7 @@ class PersonaResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     creator_nickname: str | None = None
+    auto_collections: list[str] = []  # 생성/수정 시 자동으로 추가된 컬렉션 이름 목록
 
     class Config:
         from_attributes = True
@@ -126,6 +127,7 @@ class PersonaListResponse(BaseModel):
     tags: str | None
     created_at: datetime
     creator_nickname: str | None = None
+    my_collections: list[str] = []  # 이 페르소나가 속한 컬렉션 이름 목록
 
     class Config:
         from_attributes = True
