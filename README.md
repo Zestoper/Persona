@@ -218,3 +218,65 @@ Railway는 백엔드와 프론트엔드를 별도 서비스로 배포합니다.
    - `VITE_API_URL` — 백엔드 Railway URL + `/api/v1`
    - `VITE_WS_URL` — `wss://` + 백엔드 Railway 도메인 + `/api/v1`
    - `VITE_BACKEND_URL` — 백엔드 Railway URL
+
+## 트러블슈팅
+
+### Neon PostgreSQL + asyncpg 연결 오류 (`InvalidCatalogNameError`)
+
+Neon 대시보드에서 복사한 URL에 포함된 `?channel_binding=require` 파라미터가 asyncpg에서 DB 이름으로 오파싱됨.
+
+```python
+# database.py — ? 이후 제거 후 connect_args로 SSL 분리
+_url = settings.DATABASE_URL.split("?")[0].replace("postgresql://", "postgresql+asyncpg://")
+engine = create_async_engine(_url, connect_args={"ssl": True})
+```
+
+### Vercel SPA 새로고침 시 404
+
+React Router 경로에서 새로고침하면 Vercel이 실제 파일을 찾아 404를 반환함.
+
+```json
+// vercel.json
+{ "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }] }
+```
+
+### AI 응답에 한자·러시아어 혼입
+
+시스템 프롬프트에 한국어 전용 규칙을 명시해도 LLaMA 모델이 CJK 한자·키릴 문자를 섞어 출력함. 서버 사이드에서 스트리밍 청크마다 정규표현식으로 필터링.
+
+```python
+_FOREIGN_RE = re.compile(r"[一-鿿぀-ゟ゠-ヿЀ-ӿ]+")
+def _strip_foreign_scripts(text): return _FOREIGN_RE.sub("", text)
+```
+
+### 채팅 중 WebSocket 연결 끊김 (Render 배포)
+
+Render 프록시가 유휴 WebSocket 연결을 자동 종료함. 클라이언트에서 25초마다 ping을 전송해 연결 유지.
+
+```typescript
+const pingInterval = setInterval(() => {
+  if (ws.readyState === WebSocket.OPEN) ws.send('__ping__')
+}, 25000)
+```
+
+### 배포 후 로그인은 되지만 페르소나 생성·채팅 시 자동 로그아웃
+
+`ACCESS_TOKEN_EXPIRE_MINUTES=30` 기본값으로 30분 후 모든 API 요청이 401을 반환, Axios 인터셉터가 전역 로그아웃을 트리거함.
+
+```env
+# Render 환경변수
+ACCESS_TOKEN_EXPIRE_MINUTES=10080  # 7일
+```
+
+### pydantic-settings에서 `@property` 사용 시 무음 크래시
+
+FastAPI가 exit code 3으로 종료되나 트레이스백이 없음. pydantic v2 `BaseSettings`에서 `@property`를 사용하면 내부에서 무음 종료됨. URL 변환 로직을 `database.py` 모듈 레벨로 이전해 해결.
+
+### SQLAlchemy async에서 lazy load로 `MissingGreenlet` 오류
+
+`selectinload` 없이 관계 필드에 접근하면 async 컨텍스트에서 `MissingGreenlet` 예외 발생.
+
+```python
+# 쿼리에 반드시 selectinload 명시
+select(Persona).options(selectinload(Persona.user))
+```
