@@ -38,7 +38,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
       <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#6366f1', animation: 'dot-bounce 1.2s ease-in-out 0.4s infinite' }} />
     </div>
   )
-  if (!user) return <Navigate to="/login" replace />
+  if (!user) return <Navigate to="/" replace />
   return <>{children}</>
 }
 
