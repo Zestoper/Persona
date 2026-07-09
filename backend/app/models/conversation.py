@@ -1,9 +1,7 @@
-# ── 임포트 ────────────────────────────────────────────────
 from sqlalchemy import Column, Integer, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.database import Base
-
 
 class Conversation(Base):
     """
@@ -20,30 +18,25 @@ class Conversation(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    # ── 누가 대화하나 ──────────────────────────────────────
     user_id = Column(
         Integer,
-        ForeignKey("users.id"),   # users 테이블의 id 참조
-        nullable=False,
-        index=True,               # "이 사람의 모든 대화방" 조회가 잦으니 인덱스 추가
-    )
-
-    # ── 어느 AI 캐릭터와 대화하나 ─────────────────────────
-    persona_id = Column(
-        Integer,
-        ForeignKey("personas.id"),  # personas 테이블의 id 참조
+        ForeignKey("users.id"),
         nullable=False,
         index=True,
     )
 
-    # ── 대화방 생성 시간 ───────────────────────────────────
+    persona_id = Column(
+        Integer,
+        ForeignKey("personas.id"),
+        nullable=False,
+        index=True,
+    )
+
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
-    # ── 관계 설정 ──────────────────────────────────────────
     user = relationship("User", back_populates="conversations")
     persona = relationship("Persona", back_populates="conversations")
 
-    # cascade="all, delete-orphan" : 대화방 삭제 시 그 안의 메시지도 같이 삭제
     messages = relationship("Message", back_populates="conversation", cascade="all, delete-orphan")
 
     def __repr__(self):

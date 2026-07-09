@@ -37,7 +37,6 @@ export default function FavoritesPage() {
   return (
     <div style={{ minHeight: 'calc(100vh - 64px)', background: c.bgPage, transition: 'background 0.2s ease' }}>
 
-      {/* 헤더 */}
       <div style={{ background: c.bgHero, padding: isMobile ? '2rem 1rem 1.5rem' : '2.5rem 1.5rem 2rem' }}>
         <div style={{ maxWidth: '1024px', margin: '0 auto' }}>
           <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Favorites</p>
@@ -50,24 +49,20 @@ export default function FavoritesPage() {
         </div>
       </div>
 
-      {/* 콘텐츠 */}
       <div style={{ maxWidth: '1024px', margin: '0 auto', padding: isMobile ? '1.25rem 1rem' : '2rem 1.5rem' }}>
 
-        {/* 카운트 */}
         {!isLoading && (
           <p style={{ fontSize: '0.8125rem', color: c.textMuted, marginBottom: '1rem' }}>
             {personas.length}개
           </p>
         )}
 
-        {/* 스켈레톤 */}
         {isLoading && (
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
             {[...Array(6)].map((_, i) => <SkeletonCard key={i} c={c} />)}
           </div>
         )}
 
-        {/* 빈 상태 */}
         {!isLoading && personas.length === 0 && (
           <div style={{ textAlign: 'center', padding: '5rem 1rem' }}>
             <div style={{ width: '64px', height: '64px', background: c.bgSoft, borderRadius: '50%', margin: '0 auto 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -85,7 +80,6 @@ export default function FavoritesPage() {
           </div>
         )}
 
-        {/* 카드 목록 */}
         {!isLoading && personas.length > 0 && (
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
             {personas.map((persona) => (

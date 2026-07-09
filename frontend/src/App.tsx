@@ -44,7 +44,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
 function AppRoutes() {
   const location = useLocation()
-  // 로그인/회원가입 페이지에서는 Navbar 숨김
+
   const hideNavbar = ['/login', '/register'].includes(location.pathname)
 
   return (

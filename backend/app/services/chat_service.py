@@ -1,9 +1,9 @@
 import re
-# ── 임포트 ────────────────────────────────────────────────
-from groq import AsyncGroq                   # Groq 비동기 클라이언트
+
+from groq import AsyncGroq
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
-from typing import AsyncGenerator            # 비동기 제너레이터 타입 힌트
+from typing import AsyncGenerator
 
 from app.core.config import settings
 from app.models.conversation import Conversation
@@ -11,23 +11,20 @@ from app.models.message import Message
 from app.models.persona import Persona
 from app.models.user import User
 
-# 화이트리스트 방식: 한글·영어·숫자·기본 기호만 남기고 나머지 전부 제거
 _ALLOWED_RE = re.compile(
-    "[^\uAC00-\uD7A3"   # 완성형 한글 (가-힣)
-    "\u1100-\u11FF"      # 한글 자모
-    "\u3130-\u318F"      # 한글 호환 자모
-    " -~"                 # ASCII 기본 (영문·숫자·구두점·공백)
-    "\u2018-\u201F"      # 따옴표류
-    "\u2026\u2013\u2014" # 줄임표·대시
-    "\n\r\t"             # 줄바꿈·탭
+    "[^\uAC00-\uD7A3"
+    "\u1100-\u11FF"
+    "\u3130-\u318F"
+    " -~"
+    "\u2018-\u201F"
+    "\u2026\u2013\u2014"
+    "\n\r\t"
     "]+"
 )
 
 def _strip_foreign_scripts(text: str) -> str:
     return _ALLOWED_RE.sub("", text)
 
-
-# ── 대화방 가져오기 (없으면 새로 생성) ────────────────────
 async def get_or_create_conversation(
     db: AsyncSession,
     user: User,
@@ -38,30 +35,27 @@ async def get_or_create_conversation(
     비유: 카카오톡에서 친구 프로필 누르면 기존 채팅방 열리고,
           처음이면 새 채팅방이 열리는 것.
     """
-    # ── 기존 대화방 찾기 ───────────────────────────────────
+
     result = await db.execute(
         select(Conversation)
         .where(
-            Conversation.user_id == user.id,       # 내 대화방
-            Conversation.persona_id == persona_id, # 이 페르소나와의 대화방
+            Conversation.user_id == user.id,
+            Conversation.persona_id == persona_id,
         )
     )
-    conversation = result.scalar_one_or_none()  # 있으면 반환, 없으면 None
+    conversation = result.scalar_one_or_none()
 
-    # ── 없으면 새로 생성 ───────────────────────────────────
     if not conversation:
         conversation = Conversation(
             user_id=user.id,
             persona_id=persona_id,
         )
         db.add(conversation)
-        await db.flush()           # DB에 INSERT 실행해서 id 받기
+        await db.flush()
         await db.refresh(conversation)
 
     return conversation
 
-
-# ── 대화 히스토리 불러오기 ─────────────────────────────────
 async def get_conversation_messages(
     db: AsyncSession,
     conversation_id: int,
@@ -73,16 +67,14 @@ async def get_conversation_messages(
     result = await db.execute(
         select(Message)
         .where(Message.conversation_id == conversation_id)
-        .order_by(Message.created_at)  # 오래된 것부터 — 대화 흐름 순서 유지
+        .order_by(Message.created_at)
     )
     return list(result.scalars().all())
 
-
-# ── 메시지 저장 ────────────────────────────────────────────
 async def save_message(
     db: AsyncSession,
     conversation_id: int,
-    role: str,      # "user" 또는 "assistant"
+    role: str,
     content: str,
 ) -> Message:
     """DB에 메시지 한 줄을 저장."""
@@ -96,8 +88,6 @@ async def save_message(
     await db.refresh(message)
     return message
 
-
-# ── 대화 내용 초기화 ───────────────────────────────────────
 async def clear_conversation(
     db: AsyncSession,
     user: User,
@@ -114,8 +104,6 @@ async def clear_conversation(
         await db.execute(delete(Message).where(Message.conversation_id == conversation.id))
         await db.commit()
 
-
-# ── 핵심: Groq API 스트리밍 호출 ──────────────────────────
 async def _summarize_old_messages(client: AsyncGroq, messages: list[Message]) -> str:
     """20개 이상 쌓인 오래된 메시지들을 AI로 요약."""
     history_text = "\n".join(
@@ -133,7 +121,6 @@ async def _summarize_old_messages(client: AsyncGroq, messages: list[Message]) ->
     )
     return response.choices[0].message.content or ""
 
-
 async def stream_ai_response(
     system_prompt: str,
     history: list[Message],
@@ -150,7 +137,6 @@ async def stream_ai_response(
     )
     full_system_prompt = lang_rule + system_prompt
 
-    # 대화가 20개 넘으면 오래된 것들을 요약해서 컨텍스트 압축
     if len(history) > 20:
         old_messages = history[:-10]
         recent_messages = history[-10:]

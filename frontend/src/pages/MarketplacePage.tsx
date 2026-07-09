@@ -32,7 +32,6 @@ export default function MarketplacePage() {
   const [favoritedIds, setFavoritedIds] = useState<Set<number>>(new Set())
   const [favoritePersonas, setFavoritePersonas] = useState<Persona[]>([])
 
-  // 공개 페르소나 목록 로드 (필터 변경 시 초기화)
   useEffect(() => {
     setIsLoading(true)
     setSkip(0)
@@ -58,7 +57,6 @@ export default function MarketplacePage() {
     }
   }
 
-  // 즐겨찾기 목록 로드 (로그인 시 + 페이지 포커스 시 재동기화)
   const refreshFavorites = () => {
     if (!user) { setFavoritedIds(new Set()); return }
     api.get('/favorites/ids').then((res) => setFavoritedIds(new Set(res.data.ids))).catch(() => {})
@@ -127,14 +125,12 @@ export default function MarketplacePage() {
   return (
     <div style={{ minHeight: 'calc(100vh - 64px)', background: c.bgPage, transition: 'background 0.2s ease' }}>
 
-      {/* 히어로 */}
       <div style={{ background: c.bgHero, padding: isMobile ? '2rem 1rem 1.5rem' : '2.5rem 1.5rem 2rem' }}>
         <div style={{ maxWidth: '1024px', margin: '0 auto' }}>
           <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Marketplace</p>
           <h1 style={{ color: 'white', fontSize: isMobile ? '1.375rem' : '1.875rem', fontWeight: 700, marginBottom: '0.5rem' }}>AI 캐릭터 마켓플레이스</h1>
           <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: isMobile ? '0.875rem' : '0.9375rem', marginBottom: '1.25rem' }}>다른 사람이 만든 AI 캐릭터와 대화해보세요</p>
 
-          {/* 검색창 */}
           <form onSubmit={handleSearch} style={{ display: 'flex', gap: '0.5rem', maxWidth: '480px' }}>
             <input
               type="text"
@@ -153,10 +149,8 @@ export default function MarketplacePage() {
         </div>
       </div>
 
-      {/* 콘텐츠 */}
       <div style={{ maxWidth: '1024px', margin: '0 auto', padding: isMobile ? '1.25rem 1rem' : '2rem 1.5rem' }}>
 
-        {/* 태그 필터 */}
         <div style={{ marginBottom: '1rem' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginBottom: '0.5rem' }}>
             {POPULAR_TAGS.map((tag) => (
@@ -214,7 +208,6 @@ export default function MarketplacePage() {
           </form>
         </div>
 
-        {/* 정렬 탭 + 즐겨찾기 */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
           <div style={{ display: 'flex', gap: '0.375rem' }}>
             {(['popular', 'latest'] as const).map((s) => (
@@ -253,14 +246,12 @@ export default function MarketplacePage() {
           )}
         </div>
 
-        {/* 로딩 스켈레톤 */}
         {isLoading && (
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
             {[...Array(6)].map((_, i) => <SkeletonCard key={i} c={c} />)}
           </div>
         )}
 
-        {/* 빈 상태 */}
         {!isLoading && displayedPersonas.length === 0 && (
           <div style={{ textAlign: 'center', padding: '5rem 1rem' }}>
             <div style={{ width: '64px', height: '64px', background: c.bgSoft, borderRadius: '50%', margin: '0 auto 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -280,7 +271,6 @@ export default function MarketplacePage() {
           </div>
         )}
 
-        {/* 카드 목록 */}
         {!isLoading && displayedPersonas.length > 0 && (
           <>
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
@@ -296,7 +286,6 @@ export default function MarketplacePage() {
               ))}
             </div>
 
-            {/* 더 보기 버튼 (즐겨찾기 모드 아닐 때만) */}
             {!showFavoritesOnly && hasMore && (
               <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
                 <button

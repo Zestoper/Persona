@@ -1,7 +1,6 @@
-# ── 임포트 ────────────────────────────────────────────────
 import json
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc, asc  # desc/asc: 내림차순/오름차순 정렬
+from sqlalchemy import select, desc, asc
 from sqlalchemy.orm import selectinload
 from fastapi import HTTPException, status
 from groq import AsyncGroq
@@ -12,8 +11,6 @@ from app.models.user import User
 from app.models.collection import Collection, CollectionPersona
 from app.schemas.persona import PersonaCreate, PersonaUpdate
 
-
-# ── System Prompt 자동 생성 함수 ───────────────────────────
 def build_system_prompt(
     name: str,
     personality: str,
@@ -24,22 +21,18 @@ def build_system_prompt(
     사용자가 입력한 캐릭터 정보를 Claude/Groq에 전달할 System Prompt로 변환.
     비유: 배우에게 주는 '연기 지침서'. AI가 이 텍스트를 읽고 캐릭터처럼 행동함.
     """
-    # ── 기본 정체성 설정 ───────────────────────────────────
+
     prompt = "⚠️ 절대 규칙: 오직 한국어(한글)와 영어만 사용하세요. 한자(中文), 러시아어(кириллица), 일본어(かな), 아랍어 등 다른 문자는 단 한 글자도 사용하지 마세요.\n\n"
     prompt += f"당신은 '{name}'입니다.\n\n"
 
-    # ── 성격 추가 ──────────────────────────────────────────
     prompt += f"[성격]\n{personality}\n\n"
 
-    # ── 배경스토리 추가 (있을 때만) ────────────────────────
     if background:
         prompt += f"[배경스토리]\n{background}\n\n"
 
-    # ── 말투 추가 (있을 때만) ──────────────────────────────
     if speech_style:
         prompt += f"[말투]\n{speech_style}\n\n"
 
-    # ── 공통 행동 지침 ─────────────────────────────────────
     prompt += (
         "[행동 지침]\n"
         "- 항상 위의 캐릭터 설정에 맞게 대화하세요.\n"
@@ -51,8 +44,6 @@ def build_system_prompt(
 
     return prompt
 
-
-# ── AI 기반 컬렉션 자동 분류 ──────────────────────────────
 async def _auto_classify(db: AsyncSession, persona: Persona) -> None:
     """공개 페르소나를 Groq AI로 분석해 적합한 컬렉션에 자동 추가."""
     result = await db.execute(select(Collection).order_by(Collection.id))
@@ -103,15 +94,12 @@ async def _auto_classify(db: AsyncSession, persona: Persona) -> None:
             db.add(CollectionPersona(collection_id=col_id, persona_id=persona.id))
     await db.flush()
 
-
-# ── 페르소나 생성 ──────────────────────────────────────────
 async def create_persona(
     db: AsyncSession,
     persona_data: PersonaCreate,
-    current_user: User,         # 현재 로그인한 사용자 (만든 사람)
+    current_user: User,
 ) -> Persona:
 
-    # ── System Prompt 자동 생성 ────────────────────────────
     system_prompt = build_system_prompt(
         name=persona_data.name,
         personality=persona_data.personality,
@@ -119,7 +107,6 @@ async def create_persona(
         speech_style=persona_data.speech_style,
     )
 
-    # ── Persona 객체 생성 ──────────────────────────────────
     new_persona = Persona(
         user_id=current_user.id,
         name=persona_data.name,
@@ -136,14 +123,11 @@ async def create_persona(
     await db.flush()
     await db.refresh(new_persona)
 
-    # 공개 페르소나면 AI로 적합한 컬렉션에 자동 추가
     if new_persona.is_public:
         await _auto_classify(db, new_persona)
 
     return new_persona
 
-
-# ── 내 페르소나 목록 조회 ──────────────────────────────────
 async def get_my_personas(
     db: AsyncSession,
     current_user: User,
@@ -157,12 +141,10 @@ async def get_my_personas(
     )
     return list(result.scalars().all())
 
-
-# ── 특정 페르소나 조회 ─────────────────────────────────────
 async def get_persona_by_id(
     db: AsyncSession,
     persona_id: int,
-    current_user: User | None = None,  # None이면 공개 페르소나만 허용
+    current_user: User | None = None,
 ) -> Persona:
 
     result = await db.execute(
@@ -172,15 +154,12 @@ async def get_persona_by_id(
     )
     persona = result.scalar_one_or_none()
 
-    # ── 존재하지 않는 페르소나 ────────────────────────────
     if not persona:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="페르소나를 찾을 수 없습니다.",
         )
 
-    # ── 비공개 페르소나 접근 제한 ─────────────────────────
-    # 비공개인데 로그인도 안 했거나, 내 것이 아니면 거부
     if not persona.is_public:
         if current_user is None or persona.user_id != current_user.id:
             raise HTTPException(
@@ -190,8 +169,6 @@ async def get_persona_by_id(
 
     return persona
 
-
-# ── 페르소나 수정 ──────────────────────────────────────────
 async def update_persona(
     db: AsyncSession,
     persona_id: int,
@@ -199,25 +176,19 @@ async def update_persona(
     current_user: User,
 ) -> Persona:
 
-    # ── 기존 페르소나 조회 (내 것인지 확인 포함) ──────────
     persona = await get_persona_by_id(db, persona_id, current_user)
 
-    # ── 내 것이 아니면 거부 ────────────────────────────────
     if persona.user_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="내 페르소나만 수정할 수 있습니다.",
         )
 
-    # ── 보내온 필드만 업데이트 (None이 아닌 것만) ──────────
-    # model_dump(exclude_unset=True) : 실제로 보내온 필드만 딕셔너리로 반환
-    # 비유: 수정 폼에서 이름만 바꾸면 이름만 업데이트, 나머지는 그대로
     update_fields = update_data.model_dump(exclude_unset=True)
 
     for field, value in update_fields.items():
-        setattr(persona, field, value)  # persona.name = "새이름" 형식으로 업데이트
+        setattr(persona, field, value)
 
-    # ── 캐릭터 정보가 바뀌었으면 System Prompt도 재생성 ───
     if any(f in update_fields for f in ["name", "personality", "background", "speech_style"]):
         persona.system_prompt = build_system_prompt(
             name=persona.name,
@@ -229,14 +200,11 @@ async def update_persona(
     await db.flush()
     await db.refresh(persona)
 
-    # 비공개 → 공개로 바뀐 경우 AI 자동 분류
     if update_fields.get("is_public") is True:
         await _auto_classify(db, persona)
 
     return persona
 
-
-# ── 페르소나 삭제 ──────────────────────────────────────────
 async def delete_persona(
     db: AsyncSession,
     persona_id: int,
@@ -245,18 +213,15 @@ async def delete_persona(
 
     persona = await get_persona_by_id(db, persona_id, current_user)
 
-    # ── 내 것이 아니면 거부 ────────────────────────────────
     if persona.user_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="내 페르소나만 삭제할 수 있습니다.",
         )
 
-    await db.delete(persona)  # DELETE 실행 (cascade로 대화방, 메시지도 같이 삭제)
+    await db.delete(persona)
     await db.flush()
 
-
-# ── 공개 페르소나 목록 (마켓플레이스) ─────────────────────
 async def fork_persona(
     db: AsyncSession,
     persona_id: int,
@@ -285,7 +250,6 @@ async def fork_persona(
     await db.refresh(new_persona)
     return new_persona
 
-
 async def get_persona_collection_titles(db: AsyncSession, persona_id: int) -> list[str]:
     """특정 페르소나가 속한 컬렉션 이름 목록 반환."""
     result = await db.execute(
@@ -295,7 +259,6 @@ async def get_persona_collection_titles(db: AsyncSession, persona_id: int) -> li
         .order_by(Collection.id)
     )
     return list(result.scalars().all())
-
 
 async def get_personas_collection_map(db: AsyncSession, persona_ids: list[int]) -> dict[int, list[str]]:
     """여러 페르소나의 컬렉션 이름을 한 번에 조회해 {persona_id: [title, ...]} 딕셔너리로 반환."""
@@ -312,25 +275,23 @@ async def get_personas_collection_map(db: AsyncSession, persona_ids: list[int]) 
         mapping.setdefault(pid, []).append(title)
     return mapping
 
-
 async def get_public_personas(
     db: AsyncSession,
     skip: int = 0,
     limit: int = 20,
-    sort: str = "popular",  # "popular" | "latest"
+    sort: str = "popular",
     search: str = "",
-    tag: str = "",          # 태그 필터
+    tag: str = "",
 ) -> list[Persona]:
 
     order = desc(Persona.created_at) if sort == "latest" else desc(Persona.chat_count)
 
-    query = select(Persona).where(Persona.is_public == True)  # noqa: E712
+    query = select(Persona).where(Persona.is_public == True)
     if search.strip():
         query = query.where(Persona.name.ilike(f"%{search.strip()}%"))
     if tag.strip():
-        # tags 컬럼에 해당 태그가 포함되는지 확인 (예: "친구,힐링" 에서 "친구" 검색)
+
         query = query.where(Persona.tags.ilike(f"%{tag.strip()}%"))
 
-    # id를 보조 정렬로 추가해 페이지 이동 시 중복 방지
     result = await db.execute(query.options(selectinload(Persona.user)).order_by(order, desc(Persona.id)).offset(skip).limit(limit))
     return list(result.scalars().all())

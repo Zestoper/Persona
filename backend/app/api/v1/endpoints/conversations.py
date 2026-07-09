@@ -14,7 +14,6 @@ from datetime import datetime
 
 router = APIRouter(prefix="/conversations", tags=["Conversations"])
 
-
 class ConversationListItem(BaseModel):
     id: int
     persona_id: int
@@ -26,7 +25,6 @@ class ConversationListItem(BaseModel):
 
     class Config:
         from_attributes = True
-
 
 @router.get("/me", response_model=list[ConversationListItem])
 async def get_my_conversations(

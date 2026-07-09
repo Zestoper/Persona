@@ -56,7 +56,7 @@ export default function CreatePersonaPage() {
   }
 
   const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.nativeEvent.isComposing) return  // 한글 IME 조합 중에는 무시
+    if (e.nativeEvent.isComposing) return
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault()
       const tag = tagInput.trim().replace(/,/g, '')
@@ -148,7 +148,6 @@ export default function CreatePersonaPage() {
         <div style={{ background: c.bgCard, borderRadius: '20px', border: `1.5px solid ${c.border}`, padding: '2rem', boxShadow: '0 4px 16px rgba(0,0,0,0.05)', transition: 'background 0.2s ease' }}>
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
-            {/* 아바타 */}
             <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
               <div style={{ flexShrink: 0 }}>
                 <div
@@ -196,7 +195,6 @@ export default function CreatePersonaPage() {
               </div>
             </div>
 
-            {/* 이름 + AI 채우기 버튼 */}
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                 <label style={labelStyle}>캐릭터 이름 <span style={{ color: '#ef4444' }}>*</span></label>
@@ -224,7 +222,6 @@ export default function CreatePersonaPage() {
               </p>
             </div>
 
-            {/* 성격 */}
             <div>
               <label style={labelStyle}>성격 <span style={{ color: '#ef4444' }}>*</span></label>
               <textarea
@@ -236,7 +233,6 @@ export default function CreatePersonaPage() {
               />
             </div>
 
-            {/* 배경스토리 */}
             <div>
               <label style={labelStyle}>배경스토리 <span style={{ color: c.textMuted, fontWeight: 400 }}>선택</span></label>
               <textarea
@@ -248,7 +244,6 @@ export default function CreatePersonaPage() {
               />
             </div>
 
-            {/* 말투 */}
             <div>
               <label style={labelStyle}>말투 <span style={{ color: c.textMuted, fontWeight: 400 }}>선택</span></label>
               <input
@@ -259,7 +254,6 @@ export default function CreatePersonaPage() {
               />
             </div>
 
-            {/* 태그 */}
             <div>
               <label style={labelStyle}>태그 <span style={{ color: c.textMuted, fontWeight: 400 }}>선택 (최대 5개)</span></label>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', padding: '0.625rem 0.875rem', border: `1.5px solid ${c.borderStrong}`, borderRadius: '12px', background: c.bgInput, minHeight: '46px', alignItems: 'center' }}>
@@ -281,7 +275,6 @@ export default function CreatePersonaPage() {
               </div>
             </div>
 
-            {/* 공개 여부 */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.875rem 1rem', background: c.bgSofter, borderRadius: '12px' }}>
               <input
                 type="checkbox" id="is_public" name="is_public"

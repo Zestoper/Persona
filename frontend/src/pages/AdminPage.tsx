@@ -8,8 +8,6 @@ import { useToast } from '../context/ToastContext'
 import { SkeletonRow } from '../components/Skeleton'
 import ConfirmModal from '../components/ConfirmModal'
 
-// ── 타입 정의 ─────────────────────────────────────────────
-
 interface Stats {
   total_users: number
   total_personas: number
@@ -98,14 +96,12 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [confirmState, setConfirmState] = useState<{ message: string; subMessage: string; onConfirm: () => void } | null>(null)
 
-  // 컬렉션 관리 상태
   const [newCollection, setNewCollection] = useState({ title: '', description: '', emoji: '📚' })
   const [expandedColId, setExpandedColId] = useState<number | null>(null)
   const [colPersonas, setColPersonas] = useState<CollectionPersona[]>([])
   const [addSearch, setAddSearch] = useState('')
   const [colLoading, setColLoading] = useState(false)
 
-  // 관리자 아닌 경우 차단
   useEffect(() => {
     if (user && !user.is_admin) navigate('/')
   }, [user, navigate])
@@ -283,7 +279,7 @@ export default function AdminPage() {
       />
     )}
     <div style={{ minHeight: 'calc(100vh - 64px)', background: c.bgPage, transition: 'background 0.2s ease' }}>
-      {/* 헤더 */}
+
       <div style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)', padding: isMobile ? '1.75rem 1rem' : '2rem 1.5rem' }}>
         <div style={{ maxWidth: '1024px', margin: '0 auto' }}>
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Admin</p>
@@ -292,7 +288,7 @@ export default function AdminPage() {
       </div>
 
       <div style={{ maxWidth: '1024px', margin: '0 auto', padding: isMobile ? '1.25rem 1rem' : '2rem 1.5rem' }}>
-        {/* 탭 */}
+
         <div style={{ display: 'flex', gap: '0.375rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
           {TABS.map((t) => (
             <button
@@ -316,7 +312,6 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 통계 탭 */}
         {!isLoading && tab === 'stats' && stats && (
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: '1rem' }}>
             {[
@@ -341,7 +336,6 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 신고 탭 */}
         {!isLoading && tab === 'reports' && (
           <>
             <div style={{ display: 'flex', gap: '0.375rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
@@ -404,7 +398,6 @@ export default function AdminPage() {
           </>
         )}
 
-        {/* 유저 탭 */}
         {!isLoading && tab === 'users' && (
           <>
             <input
@@ -457,7 +450,6 @@ export default function AdminPage() {
           </>
         )}
 
-        {/* 페르소나 탭 */}
         {!isLoading && tab === 'personas' && (
           <>
             <input
@@ -517,10 +509,10 @@ export default function AdminPage() {
             )}
           </>
         )}
-        {/* 컬렉션 탭 */}
+
         {!isLoading && tab === 'collections' && (
           <>
-            {/* 새 컬렉션 만들기 */}
+
             <div style={{ background: c.bgCard, borderRadius: '16px', padding: '1.25rem', border: `1px solid ${c.border}`, marginBottom: '1.25rem' }}>
               <p style={{ fontWeight: 700, color: c.textPrimary, margin: '0 0 1rem 0', fontSize: '0.9375rem' }}>새 컬렉션 만들기</p>
               <div style={{ display: 'flex', gap: '0.625rem', flexWrap: 'wrap' }}>
@@ -563,7 +555,7 @@ export default function AdminPage() {
 
                     return (
                       <div key={col.id} style={{ background: c.bgCard, borderRadius: '16px', border: `1px solid ${isExpanded ? '#6366f1' : c.border}`, overflow: 'hidden', transition: 'border-color 0.15s' }}>
-                        {/* 컬렉션 헤더 */}
+
                         <div style={{ padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: 0 }}>
                             <span style={{ fontSize: '1.5rem' }}>{col.emoji || '📚'}</span>
@@ -581,14 +573,13 @@ export default function AdminPage() {
                           </div>
                         </div>
 
-                        {/* 확장 패널 */}
                         {isExpanded && (
                           <div style={{ borderTop: `1px solid ${c.border}`, padding: '1rem 1.25rem', background: c.bgSofter }}>
                             {colLoading ? (
                               <p style={{ color: c.textMuted, fontSize: '0.875rem', margin: 0 }}>불러오는 중...</p>
                             ) : (
                               <>
-                                {/* 현재 컬렉션 안 페르소나 */}
+
                                 <p style={{ fontWeight: 600, color: c.textPrimary, margin: '0 0 0.625rem 0', fontSize: '0.875rem' }}>
                                   현재 포함된 페르소나 ({colPersonas.length})
                                 </p>
@@ -611,7 +602,6 @@ export default function AdminPage() {
                                   )
                                 }
 
-                                {/* 페르소나 추가 */}
                                 <p style={{ fontWeight: 600, color: c.textPrimary, margin: '0 0 0.5rem 0', fontSize: '0.875rem' }}>페르소나 추가</p>
                                 <input
                                   value={addSearch}

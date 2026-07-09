@@ -43,7 +43,7 @@ export default function EditPersonaPage() {
     api.get(`/personas/${personaId}`)
       .then((res) => {
         const p = res.data
-        // 본인 페르소나가 아니면 접근 차단
+
         if (user && p.user_id !== user.id) {
           navigate('/my', { replace: true })
           return
@@ -76,7 +76,7 @@ export default function EditPersonaPage() {
   }
 
   const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.nativeEvent.isComposing) return  // 한글 IME 조합 중에는 무시
+    if (e.nativeEvent.isComposing) return
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault()
       const tag = tagInput.trim().replace(/,/g, '')
@@ -151,7 +151,6 @@ export default function EditPersonaPage() {
         <div style={{ background: c.bgCard, borderRadius: '20px', border: `1.5px solid ${c.border}`, padding: '2rem', boxShadow: '0 4px 16px rgba(0,0,0,0.05)', transition: 'background 0.2s ease' }}>
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
-            {/* 아바타 */}
             <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
               <div style={{ flexShrink: 0 }}>
                 <div
@@ -204,7 +203,6 @@ export default function EditPersonaPage() {
               </div>
             </div>
 
-            {/* 이름 */}
             <div>
               <label style={labelStyle}>캐릭터 이름 <span style={{ color: '#ef4444' }}>*</span></label>
               <input type="text" name="name" value={form.name} onChange={handleChange} required style={inputStyle}
@@ -213,7 +211,6 @@ export default function EditPersonaPage() {
               />
             </div>
 
-            {/* 성격 */}
             <div>
               <label style={labelStyle}>성격 <span style={{ color: '#ef4444' }}>*</span></label>
               <textarea name="personality" value={form.personality} onChange={handleChange} required rows={3}
@@ -223,7 +220,6 @@ export default function EditPersonaPage() {
               />
             </div>
 
-            {/* 배경스토리 */}
             <div>
               <label style={labelStyle}>배경스토리 <span style={{ color: c.textMuted, fontWeight: 400 }}>선택</span></label>
               <textarea name="background" value={form.background} onChange={handleChange} rows={3}
@@ -233,7 +229,6 @@ export default function EditPersonaPage() {
               />
             </div>
 
-            {/* 말투 */}
             <div>
               <label style={labelStyle}>말투 <span style={{ color: c.textMuted, fontWeight: 400 }}>선택</span></label>
               <input type="text" name="speech_style" value={form.speech_style} onChange={handleChange} style={inputStyle}
@@ -242,7 +237,6 @@ export default function EditPersonaPage() {
               />
             </div>
 
-            {/* 태그 */}
             <div>
               <label style={labelStyle}>태그 <span style={{ color: c.textMuted, fontWeight: 400 }}>선택 (최대 5개)</span></label>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', padding: '0.625rem 0.875rem', border: `1.5px solid ${c.borderStrong}`, borderRadius: '12px', background: c.bgInput, minHeight: '46px', alignItems: 'center' }}>
@@ -264,7 +258,6 @@ export default function EditPersonaPage() {
               </div>
             </div>
 
-            {/* 공개 여부 */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.875rem 1rem', background: c.bgSofter, borderRadius: '12px' }}>
               <input type="checkbox" id="is_public" name="is_public" checked={form.is_public} onChange={handleChange}
                 style={{ width: '16px', height: '16px', accentColor: '#6366f1', cursor: 'pointer' }}

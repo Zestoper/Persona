@@ -22,7 +22,6 @@ export default function Navbar() {
     return () => { document.body.style.overflow = '' }
   }, [menuOpen])
 
-  // 드롭다운 외부 클릭 시 닫기
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (dropRef.current && !dropRef.current.contains(e.target as Node)) setDropOpen(false)
@@ -53,7 +52,6 @@ export default function Navbar() {
       <nav style={{ background: c.bgNavbar, borderBottom: `1px solid ${c.borderNav}`, position: 'sticky', top: 0, zIndex: 50, transition: 'background 0.2s ease' }}>
         <div style={{ padding: isMobile ? '0 1rem' : '0 2rem', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
 
-          {/* 로고 */}
           <Link to={user ? '/marketplace' : '/'} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', flexShrink: 0 }}>
             <div style={{ width: '34px', height: '34px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(99,102,241,0.35)' }}>
               <span style={{ color: 'white', fontWeight: 800, fontSize: '0.9375rem' }}>P</span>
@@ -61,10 +59,9 @@ export default function Navbar() {
             <span style={{ fontWeight: 800, color: c.textPrimary, fontSize: '1.0625rem', letterSpacing: '-0.02em' }}>Persona</span>
           </Link>
 
-          {/* 데스크탑 */}
           {!isMobile && (
             <>
-              {/* 중앙 네비 링크 */}
+
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.125rem', flex: 1, paddingLeft: '1.5rem' }}>
                 {user && <Link to="/marketplace" style={navLink('/marketplace')}>마켓</Link>}
                 <Link to="/collections" style={navLink('/collections', '/collections')}>컬렉션</Link>
@@ -74,21 +71,19 @@ export default function Navbar() {
                 <Link to="/pricing" style={navLink('/pricing')}>요금제</Link>
               </div>
 
-              {/* 우측 액션 */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
-                {/* 다크모드 */}
+
                 <button onClick={toggleTheme} style={{ background: c.bgSoft, border: `1px solid ${c.border}`, borderRadius: '8px', padding: '0.375rem 0.625rem', fontSize: '0.875rem', cursor: 'pointer' }}>
                   {isDark ? '☀️' : '🌙'}
                 </button>
 
                 {user ? (
                   <>
-                    {/* + 만들기 */}
+
                     <button onClick={() => navigate('/create')} style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', fontSize: '0.9375rem', fontWeight: 600, padding: '0.4375rem 1.125rem', borderRadius: '9px', border: 'none', cursor: 'pointer', boxShadow: '0 2px 8px rgba(99,102,241,0.3)', whiteSpace: 'nowrap' }}>
                       + 만들기
                     </button>
 
-                    {/* 유저 드롭다운 */}
                     <div ref={dropRef} style={{ position: 'relative' }}>
                       <button
                         onClick={() => setDropOpen((o) => !o)}
@@ -125,7 +120,6 @@ export default function Navbar() {
             </>
           )}
 
-          {/* 모바일 우측 */}
           {isMobile && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
               <button onClick={toggleTheme} style={{ background: c.bgSoft, border: `1px solid ${c.border}`, borderRadius: '8px', padding: '0.375rem 0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}>
@@ -147,7 +141,6 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* 모바일 드로어 */}
       {isMobile && (
         <>
           {menuOpen && (

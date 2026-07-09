@@ -88,7 +88,6 @@ export default function ProfilePage() {
           <p style={{ color: c.textMuted, fontSize: '0.875rem', marginTop: '0.25rem' }}>계정 정보를 확인하고 수정할 수 있어요</p>
         </div>
 
-        {/* 계정 정보 */}
         <div style={cardStyle}>
           <h2 style={{ fontSize: '0.9375rem', fontWeight: 700, color: c.textPrimary, margin: '0 0 1.25rem 0' }}>계정 정보</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -103,7 +102,6 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* 닉네임 변경 */}
         <div style={cardStyle}>
           <h2 style={{ fontSize: '0.9375rem', fontWeight: 700, color: c.textPrimary, margin: '0 0 1.25rem 0' }}>닉네임 변경</h2>
           <form onSubmit={handleNicknameSave} style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
@@ -125,7 +123,6 @@ export default function ProfilePage() {
           </form>
         </div>
 
-        {/* 비밀번호 변경 */}
         <div style={cardStyle}>
           <h2 style={{ fontSize: '0.9375rem', fontWeight: 700, color: c.textPrimary, margin: '0 0 1.25rem 0' }}>비밀번호 변경</h2>
           <form onSubmit={handlePasswordSave} style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
@@ -157,7 +154,6 @@ export default function ProfilePage() {
           </form>
         </div>
 
-        {/* 로그아웃 */}
         <div style={cardStyle}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
@@ -173,7 +169,6 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* 회원탈퇴 */}
         <div style={{ ...cardStyle, border: '1.5px solid #fee2e2' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>

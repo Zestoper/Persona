@@ -80,7 +80,6 @@ export default function CollectionDetailPage() {
   return (
     <div style={{ minHeight: 'calc(100vh - 64px)', background: c.bgPage, transition: 'background 0.2s ease' }}>
 
-      {/* 헤더 */}
       <div style={{ background: c.bgHero, padding: isMobile ? '2rem 1rem 1.5rem' : '2.5rem 1.5rem 2rem' }}>
         <div style={{ maxWidth: '1024px', margin: '0 auto' }}>
           <button
@@ -110,7 +109,6 @@ export default function CollectionDetailPage() {
         </div>
       </div>
 
-      {/* 페르소나 그리드 */}
       <div style={{ maxWidth: '1024px', margin: '0 auto', padding: isMobile ? '1.5rem 1rem' : '2rem 1.5rem' }}>
         {collection.personas.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '4rem 1rem' }}>

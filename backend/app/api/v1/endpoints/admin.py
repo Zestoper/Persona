@@ -14,14 +14,10 @@ from app.core.security import get_current_user
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
-
 async def require_admin(current_user: User = Depends(get_current_user)) -> User:
     if not current_user.is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="관리자만 접근할 수 있습니다.")
     return current_user
-
-
-# ── 응답 스키마 ───────────────────────────────────────────
 
 class StatsResponse(BaseModel):
     total_users: int
@@ -30,7 +26,6 @@ class StatsResponse(BaseModel):
     total_messages: int
     total_reports: int
     pending_reports: int
-
 
 class AdminUserItem(BaseModel):
     id: int
@@ -44,7 +39,6 @@ class AdminUserItem(BaseModel):
     class Config:
         from_attributes = True
 
-
 class AdminPersonaItem(BaseModel):
     id: int
     name: str
@@ -57,7 +51,6 @@ class AdminPersonaItem(BaseModel):
 
     class Config:
         from_attributes = True
-
 
 class AdminReportItem(BaseModel):
     id: int
@@ -73,12 +66,8 @@ class AdminReportItem(BaseModel):
     class Config:
         from_attributes = True
 
-
 class ReportStatusUpdate(BaseModel):
-    status: str  # "resolved" | "rejected"
-
-
-# ── 1. 통계 대시보드 ──────────────────────────────────────
+    status: str
 
 @router.get("/stats", response_model=StatsResponse)
 async def get_stats(
@@ -101,9 +90,6 @@ async def get_stats(
         pending_reports=pending_reports or 0,
     )
 
-
-# ── 2. 유저 목록 ──────────────────────────────────────────
-
 @router.get("/users", response_model=list[AdminUserItem])
 async def get_users(
     skip: int = 0,
@@ -111,7 +97,7 @@ async def get_users(
     db: AsyncSession = Depends(get_db),
     _: User = Depends(require_admin),
 ):
-    # 페르소나 수를 서브쿼리로 한 번에 집계 (N+1 → 1 쿼리)
+
     persona_count_sq = (
         select(Persona.user_id, func.count(Persona.id).label("cnt"))
         .group_by(Persona.user_id)
@@ -133,7 +119,6 @@ async def get_users(
         for u, cnt in rows
     ]
 
-
 @router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(
     user_id: int,
@@ -149,7 +134,6 @@ async def delete_user(
         raise HTTPException(status_code=400, detail="본인 계정은 삭제할 수 없습니다.")
     await db.delete(user)
     await db.flush()
-
 
 @router.put("/users/{user_id}/toggle-active")
 async def toggle_user_active(
@@ -168,9 +152,6 @@ async def toggle_user_active(
     await db.flush()
     return {"id": user.id, "is_active": user.is_active}
 
-
-# ── 3. 페르소나 목록 ──────────────────────────────────────
-
 @router.get("/personas", response_model=list[AdminPersonaItem])
 async def get_all_personas(
     skip: int = 0,
@@ -178,7 +159,7 @@ async def get_all_personas(
     db: AsyncSession = Depends(get_db),
     _: User = Depends(require_admin),
 ):
-    # User JOIN으로 N+1 제거
+
     rows = (await db.execute(
         select(Persona, User.nickname.label("user_nickname"))
         .outerjoin(User, Persona.user_id == User.id)
@@ -196,7 +177,6 @@ async def get_all_personas(
         for p, nick in rows
     ]
 
-
 @router.put("/personas/{persona_id}/toggle-public")
 async def toggle_persona_public(
     persona_id: int,
@@ -212,7 +192,6 @@ async def toggle_persona_public(
     await db.flush()
     return {"id": persona.id, "is_public": persona.is_public}
 
-
 @router.delete("/personas/{persona_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def force_delete_persona(
     persona_id: int,
@@ -227,12 +206,9 @@ async def force_delete_persona(
     await db.delete(persona)
     await db.flush()
 
-
-# ── 4. 신고 목록 ──────────────────────────────────────────
-
 @router.get("/reports", response_model=list[AdminReportItem])
 async def get_reports(
-    status_filter: str = "",  # "" | "pending" | "resolved" | "rejected"
+    status_filter: str = "",
     skip: int = 0,
     limit: int = 50,
     db: AsyncSession = Depends(get_db),
@@ -260,7 +236,6 @@ async def get_reports(
             status=r.status, created_at=r.created_at,
         ))
     return items
-
 
 @router.put("/reports/{report_id}", response_model=AdminReportItem)
 async def update_report_status(

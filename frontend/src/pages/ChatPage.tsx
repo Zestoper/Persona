@@ -45,7 +45,6 @@ export default function ChatPage() {
   const isComposingRef = useRef(false)
   const isAtBottomRef = useRef(true)
 
-  // 스크롤 위치 추적
   const handleScroll = useCallback(() => {
     const el = scrollAreaRef.current
     if (!el) return
@@ -66,7 +65,6 @@ export default function ChatPage() {
     const token = localStorage.getItem('token')
     if (!token) { navigate('/login'); return }
 
-    // JWT 만료 시각 계산 → 만료되면 자동 로그아웃
     let expiryTimer: ReturnType<typeof setTimeout> | null = null
     try {
       const payload = JSON.parse(atob(token.split('.')[1]))
@@ -80,13 +78,12 @@ export default function ChatPage() {
         }, msUntilExpiry)
       }
     } catch {
-      // JWT 디코딩 실패 시 무시
+
     }
 
     const ws = new WebSocket(`${import.meta.env.VITE_WS_URL ?? 'ws://localhost:8000/api/v1'}/chat/${personaId}?token=${token}`)
     wsRef.current = ws
 
-    // 25초마다 ping 전송 — Render 프록시 유휴 타임아웃 방지
     const pingInterval = setInterval(() => {
       if (ws.readyState === WebSocket.OPEN) {
         ws.send('__ping__')
@@ -105,7 +102,7 @@ export default function ChatPage() {
       const data = JSON.parse(event.data)
 
       if (data.type === 'pong') {
-        // heartbeat 응답 — 무시
+
         return
       }
 
@@ -153,7 +150,7 @@ export default function ChatPage() {
 
       } else if (data.type === 'error') {
         if (data.code === 'auth_failed') {
-          // 토큰 만료 → 로그아웃 처리 (logout()이 /login으로 리다이렉트)
+
           showToast(data.message || '세션이 만료됐어요. 다시 로그인해주세요.', 'info')
           intentionalCloseRef.current = true
           logout()
@@ -168,7 +165,7 @@ export default function ChatPage() {
       setIsConnected(false)
       if (!intentionalCloseRef.current) {
         if (!wasConnectedRef.current) {
-          // 연결 이벤트 없이 닫힘 = 접근 거부 (비공개 페르소나 등)
+
           showToast('비공개 처리된 페르소나입니다', 'error')
           navigate(-1)
         } else {
@@ -210,7 +207,6 @@ export default function ChatPage() {
     }
   }
 
-  // textarea 높이 자동 조절
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value)
     e.target.style.height = 'auto'
@@ -242,7 +238,6 @@ export default function ChatPage() {
     )}
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 64px)', background: c.bgPage, transition: 'background 0.2s ease' }}>
 
-      {/* 채팅 헤더 */}
       <div style={{ background: c.bgCard, borderBottom: `1px solid ${c.border}`, padding: '0 1.25rem', height: '56px', display: 'flex', alignItems: 'center', gap: '0.875rem', flexShrink: 0 }}>
         <button
           onClick={() => navigate(-1)}
@@ -250,7 +245,7 @@ export default function ChatPage() {
         >
           ←
         </button>
-        {/* 이름 클릭 → 상세 페이지 */}
+
         <button
           onClick={() => navigate(`/persona/${personaId}`)}
           style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', background: 'none', border: 'none', cursor: 'pointer', padding: 0, flex: 1, textAlign: 'left' }}
@@ -271,7 +266,6 @@ export default function ChatPage() {
         </button>
       </div>
 
-      {/* 연결 끊김 배너 */}
       {isDisconnected && (
         <div style={{ background: '#fef3c7', borderBottom: '1px solid #fde68a', padding: '0.625rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexShrink: 0 }}>
           <span style={{ fontSize: '0.875rem', color: '#92400e', fontWeight: 500 }}>
@@ -286,14 +280,12 @@ export default function ChatPage() {
         </div>
       )}
 
-      {/* 메시지 목록 */}
       <div
         ref={scrollAreaRef}
         onScroll={handleScroll}
         style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '1rem 0.875rem' : '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}
       >
 
-        {/* 빈 화면 웰컴 카드 */}
         {messages.length === 0 && isConnected && personaName && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, padding: '2rem 1rem', gap: '1rem' }}>
             <PersonaAvatar name={personaName} avatarUrl={personaAvatar} size={72} radius="20px" />
@@ -316,7 +308,6 @@ export default function ChatPage() {
           </div>
         )}
 
-        {/* 메시지들 */}
         {messages.map((msg, i) => {
           const showTime = i === messages.length - 1 || messages[i + 1]?.role !== msg.role
           return (
@@ -360,7 +351,6 @@ export default function ChatPage() {
                     )}
                   </div>
 
-                  {/* 시간 */}
                   {showTime && msg.created_at && !msg.isStreaming && (
                     <span style={{ fontSize: '0.6875rem', color: c.textMuted, padding: '0 0.25rem' }}>
                       {formatTime(msg.created_at)}
@@ -375,7 +365,6 @@ export default function ChatPage() {
         <div ref={bottomRef} />
       </div>
 
-      {/* 새 메시지 / 스크롤 버튼 */}
       {showScrollBtn && (
         <div style={{ position: 'absolute', bottom: isMobile ? '80px' : '90px', left: '50%', transform: 'translateX(-50%)', zIndex: 10 }}>
           <button
@@ -387,7 +376,6 @@ export default function ChatPage() {
         </div>
       )}
 
-      {/* 입력창 */}
       <div style={{ background: c.bgCard, borderTop: `1px solid ${c.border}`, padding: isMobile ? '0.75rem 0.875rem' : '0.875rem 1.25rem', flexShrink: 0 }}>
         <div style={{ display: 'flex', gap: '0.625rem', alignItems: 'flex-end' }}>
           <textarea

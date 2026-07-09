@@ -3,7 +3,6 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.database import Base
 
-
 class Collection(Base):
     __tablename__ = "collections"
 
@@ -15,7 +14,6 @@ class Collection(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     collection_personas = relationship("CollectionPersona", back_populates="collection", cascade="all, delete-orphan")
-
 
 class CollectionPersona(Base):
     """페르소나-컬렉션 N:M 연결 테이블."""

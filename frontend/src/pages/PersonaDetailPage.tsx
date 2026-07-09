@@ -128,7 +128,7 @@ export default function PersonaDetailPage() {
 
   return (
     <div style={{ minHeight: 'calc(100vh - 64px)', background: c.bgPage, transition: 'background 0.2s ease' }}>
-      {/* 헤더 배너 */}
+
       <div style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', padding: isMobile ? '2rem 1rem' : '2.5rem 1.5rem' }}>
         <div style={{ maxWidth: '720px', margin: '0 auto' }}>
           <button
@@ -162,10 +162,8 @@ export default function PersonaDetailPage() {
         </div>
       </div>
 
-      {/* 본문 */}
       <div style={{ maxWidth: '720px', margin: '0 auto', padding: isMobile ? '1.25rem 1rem' : '2rem 1.5rem' }}>
 
-        {/* 태그 */}
         {tags.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginBottom: '1.5rem' }}>
             {tags.map((tag) => (
@@ -176,7 +174,6 @@ export default function PersonaDetailPage() {
           </div>
         )}
 
-        {/* 액션 버튼들 */}
         <div style={{ display: 'flex', gap: '0.625rem', marginBottom: '1.75rem', flexWrap: 'wrap' }}>
           <button
             onClick={handleChat}
@@ -215,19 +212,16 @@ export default function PersonaDetailPage() {
           )}
         </div>
 
-        {/* 성격 */}
         <Section title="성격" c={c}>
           <p style={{ color: c.textSecondary, lineHeight: 1.7, margin: 0 }}>{persona.personality}</p>
         </Section>
 
-        {/* 배경스토리 */}
         {persona.background && (
           <Section title="배경스토리" c={c}>
             <p style={{ color: c.textSecondary, lineHeight: 1.7, margin: 0 }}>{persona.background}</p>
           </Section>
         )}
 
-        {/* 내 페르소나라면 수정 버튼 */}
         {isOwner && (
           <button
             onClick={() => navigate(`/edit/${persona.id}`)}
@@ -238,7 +232,6 @@ export default function PersonaDetailPage() {
         )}
       </div>
 
-      {/* 신고 모달 */}
       {showReportModal && (
         <div
           onClick={() => setShowReportModal(false)}
