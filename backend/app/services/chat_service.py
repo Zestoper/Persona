@@ -193,7 +193,7 @@ async def stream_ai_response(
                 "https://api.cerebras.ai/v1/chat/completions",
                 headers={"Authorization": f"Bearer {settings.CEREBRAS_API_KEY}"},
                 json={
-                    "model": "llama3.1-8b",
+                    "model": "gpt-oss-120b",
                     "messages": messages,
                     "stream": True,
                     "max_tokens": 1024,
