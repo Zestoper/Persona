@@ -1,4 +1,5 @@
 import re
+import asyncio
 
 from groq import AsyncGroq
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -154,15 +155,25 @@ async def stream_ai_response(
             + [{"role": "user", "content": user_message}]
         )
 
-    stream = await client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=messages,
-        stream=True,
-        max_tokens=1024,
-        temperature=0.8,
-    )
+    try:
+        stream = await asyncio.wait_for(
+            client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=messages,
+                stream=True,
+                max_tokens=1024,
+                temperature=0.8,
+            ),
+            timeout=20.0,
+        )
+    except asyncio.TimeoutError:
+        yield "죄송해요, 응답이 너무 오래 걸려요. 잠시 후 다시 시도해주세요. 🙏"
+        return
 
-    async for chunk in stream:
-        delta = chunk.choices[0].delta
-        if delta.content:
-            yield _strip_foreign_scripts(delta.content)
+    try:
+        async for chunk in stream:
+            delta = chunk.choices[0].delta
+            if delta.content:
+                yield _strip_foreign_scripts(delta.content)
+    except asyncio.TimeoutError:
+        yield "\n\n(응답이 중단됐어요. 다시 시도해주세요)"
