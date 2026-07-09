@@ -188,7 +188,7 @@ async def stream_ai_response(
                 "https://api.cerebras.ai/v1/chat/completions",
                 headers={"Authorization": f"Bearer {settings.CEREBRAS_API_KEY}"},
                 json={
-                    "model": "llama-3.3-70b",
+                    "model": "llama3.3-70b",
                     "messages": messages,
                     "stream": True,
                     "max_tokens": 1024,
