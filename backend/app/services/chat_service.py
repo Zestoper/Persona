@@ -1,8 +1,11 @@
 import re
 import asyncio
 import json
+import logging
 
 import httpx
+
+logger = logging.getLogger(__name__)
 from groq import AsyncGroq
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
@@ -173,14 +176,16 @@ async def stream_ai_response(
             if delta.content:
                 yield _strip_foreign_scripts(delta.content)
         return
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"[Groq 실패] {type(e).__name__}: {e}")
 
     # Groq 실패 시 Cerebras로 폴백
     if not settings.CEREBRAS_API_KEY:
+        logger.error("[Cerebras] API 키 없음")
         yield "죄송해요, 응답이 너무 오래 걸려요. 잠시 후 다시 시도해주세요. 🙏"
         return
 
+    logger.info("[Cerebras] 폴백 시작")
     try:
         async with httpx.AsyncClient(timeout=30.0) as http:
             async with http.stream(
@@ -195,6 +200,11 @@ async def stream_ai_response(
                     "temperature": 0.8,
                 },
             ) as resp:
+                if resp.status_code != 200:
+                    body = await resp.aread()
+                    logger.error(f"[Cerebras] HTTP {resp.status_code}: {body.decode()[:200]}")
+                    yield "죄송해요, 현재 AI 서비스가 원활하지 않아요. 잠시 후 다시 시도해주세요. 🙏"
+                    return
                 async for line in resp.aiter_lines():
                     if not line.startswith("data: "):
                         continue
@@ -207,5 +217,6 @@ async def stream_ai_response(
                             yield _strip_foreign_scripts(content)
                     except Exception:
                         continue
-    except Exception:
+    except Exception as e:
+        logger.error(f"[Cerebras] 예외: {type(e).__name__}: {e}")
         yield "죄송해요, 현재 AI 서비스가 원활하지 않아요. 잠시 후 다시 시도해주세요. 🙏"
