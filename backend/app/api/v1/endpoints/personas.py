@@ -1,4 +1,3 @@
-# ── 임포트 ────────────────────────────────────────────────
 import uuid
 import json
 from pathlib import Path
@@ -21,22 +20,17 @@ from app.services.chat_service import _strip_foreign_scripts
 AVATAR_DIR = Path(__file__).parent.parent.parent.parent / "static" / "avatars"
 ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 
-
-# ── 라우터 생성 ────────────────────────────────────────────
 router = APIRouter(prefix="/personas", tags=["Personas"])
 
-
-# ── 1. 페르소나 생성 ────────────────────────────────────────
-# POST /api/v1/personas
 @router.post(
     "",
     response_model=PersonaResponse,
     status_code=status.HTTP_201_CREATED,
 )
 async def create_persona(
-    persona_data: PersonaCreate,                        # 요청 바디
+    persona_data: PersonaCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),     # JWT 인증 필수
+    current_user: User = Depends(get_current_user),
 ):
     """
     새 AI 페르소나를 생성합니다.
@@ -49,12 +43,6 @@ async def create_persona(
     d["auto_collections"] = auto_collections
     return PersonaResponse(**d)
 
-
-# ── 2. 내 페르소나 목록 조회 ───────────────────────────────
-# GET /api/v1/personas/me
-# 주의: "/me"를 "/{id}" 보다 먼저 선언해야 함
-# 이유: FastAPI는 위에서부터 경로를 매칭하는데,
-#       "/{id}"가 먼저 있으면 "me"도 문자열 id로 인식해버림
 @router.get("/me", response_model=list[PersonaListResponse])
 async def get_my_personas(
     db: AsyncSession = Depends(get_db),
@@ -70,9 +58,6 @@ async def get_my_personas(
         result.append(PersonaListResponse(**d))
     return result
 
-
-# ── 3. 공개 페르소나 목록 (마켓플레이스) ──────────────────
-# GET /api/v1/personas/public?skip=0&limit=20
 @router.get("/public", response_model=list[PersonaListResponse])
 async def get_public_personas(
     skip: int = 0,
@@ -84,8 +69,6 @@ async def get_public_personas(
 ):
     return await persona_service.get_public_personas(db, skip=skip, limit=limit, sort=sort, search=search, tag=tag)
 
-
-# ── 페르소나 자동 생성 (Groq AI로 성격/배경/말투 제안) ────
 @router.post("/generate", response_model=PersonaGenerateResponse)
 async def generate_persona_fields(
     data: PersonaGenerateRequest,
@@ -128,9 +111,6 @@ async def generate_persona_fields(
         speech_style=_strip_foreign_scripts(parsed.get("speech_style", "친근한 반말")),
     )
 
-
-# ── 4. 특정 페르소나 조회 ──────────────────────────────────
-# GET /api/v1/personas/{persona_id}
 @router.get("/{persona_id}", response_model=PersonaResponse)
 async def get_persona(
     persona_id: int,
@@ -143,13 +123,10 @@ async def get_persona(
     """
     return await persona_service.get_persona_by_id(db, persona_id, current_user)
 
-
-# ── 5. 페르소나 수정 ────────────────────────────────────────
-# PUT /api/v1/personas/{persona_id}
 @router.put("/{persona_id}", response_model=PersonaResponse)
 async def update_persona(
     persona_id: int,
-    update_data: PersonaUpdate,   # 수정할 필드만 보내면 됨 (나머지는 기존 값 유지)
+    update_data: PersonaUpdate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -167,9 +144,6 @@ async def update_persona(
     d["auto_collections"] = auto_collections
     return PersonaResponse(**d)
 
-
-# ── 6. 페르소나 삭제 ────────────────────────────────────────
-# DELETE /api/v1/personas/{persona_id}
 @router.delete("/{persona_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_persona(
     persona_id: int,
@@ -184,9 +158,6 @@ async def delete_persona(
     """
     await persona_service.delete_persona(db, persona_id, current_user)
 
-
-# ── 7. 페르소나 복사(포크) ─────────────────────────────────
-# POST /api/v1/personas/{persona_id}/fork
 @router.post("/{persona_id}/fork", response_model=PersonaResponse, status_code=status.HTTP_201_CREATED)
 async def fork_persona(
     persona_id: int,
@@ -196,9 +167,6 @@ async def fork_persona(
     """공개 페르소나를 내 계정으로 복사합니다."""
     return await persona_service.fork_persona(db, persona_id, current_user)
 
-
-# ── 8. 아바타 이미지 업로드 ────────────────────────────────
-# POST /api/v1/personas/{persona_id}/avatar
 @router.post("/{persona_id}/avatar", response_model=PersonaResponse)
 async def upload_avatar(
     persona_id: int,
@@ -214,7 +182,7 @@ async def upload_avatar(
     save_path = AVATAR_DIR / filename
 
     contents = await file.read()
-    if len(contents) > 5 * 1024 * 1024:  # 5MB 제한
+    if len(contents) > 5 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="파일 크기는 5MB 이하여야 합니다.")
 
     save_path.write_bytes(contents)

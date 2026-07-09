@@ -47,7 +47,7 @@ export default function ConversationsPage() {
 
   return (
     <div style={{ minHeight: 'calc(100vh - 64px)', background: c.bgPage, transition: 'background 0.2s ease' }}>
-      {/* 헤더 */}
+
       <div style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', padding: isMobile ? '1.75rem 1rem' : '2rem 1.5rem' }}>
         <div style={{ maxWidth: '720px', margin: '0 auto' }}>
           <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.375rem' }}>Conversations</p>
@@ -57,14 +57,12 @@ export default function ConversationsPage() {
 
       <div style={{ maxWidth: '720px', margin: '0 auto', padding: isMobile ? '1.25rem 1rem' : '2rem 1.5rem' }}>
 
-        {/* 로딩 */}
         {isLoading && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {[...Array(5)].map((_, i) => <SkeletonRow key={i} c={c} />)}
           </div>
         )}
 
-        {/* 빈 상태 */}
         {!isLoading && conversations.length === 0 && (
           <div style={{ textAlign: 'center', padding: '5rem 1rem' }}>
             <div style={{ width: '64px', height: '64px', background: c.bgSoft, borderRadius: '50%', margin: '0 auto 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -80,7 +78,6 @@ export default function ConversationsPage() {
           </div>
         )}
 
-        {/* 대화 목록 */}
         {!isLoading && conversations.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
             {conversations.map((conv) => (

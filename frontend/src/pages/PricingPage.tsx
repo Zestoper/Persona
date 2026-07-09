@@ -102,12 +102,11 @@ export default function PricingPage() {
     else if (action === 'enterprise') window.location.href = 'mailto:contact@persona.ai'
   }
 
-  const yearlyDiscount = 0.8 // 20% 할인
+  const yearlyDiscount = 0.8
 
   return (
     <div style={{ minHeight: 'calc(100vh - 64px)', background: c.bgPage, transition: 'background 0.2s ease' }}>
 
-      {/* 히어로 */}
       <div style={{ background: c.bgHero, padding: isMobile ? '2.5rem 1rem 3rem' : '3.5rem 1.5rem 4rem', textAlign: 'center' }}>
         <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Pricing</p>
         <h1 style={{ color: 'white', fontSize: isMobile ? '1.75rem' : '2.5rem', fontWeight: 800, marginBottom: '0.75rem', lineHeight: 1.2 }}>
@@ -117,7 +116,6 @@ export default function PricingPage() {
           무료로 시작하고, 필요할 때 업그레이드하세요
         </p>
 
-        {/* 월간 / 연간 토글 */}
         <div style={{ display: 'inline-flex', background: 'rgba(255,255,255,0.15)', borderRadius: '12px', padding: '0.25rem', gap: '0.25rem' }}>
           {(['monthly', 'yearly'] as const).map((b) => (
             <button
@@ -137,7 +135,6 @@ export default function PricingPage() {
         </div>
       </div>
 
-      {/* 플랜 카드 */}
       <div style={{ maxWidth: '1024px', margin: '0 auto', padding: isMobile ? '0 1rem' : '0 1.5rem', transform: 'translateY(-2rem)' }}>
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '1rem' }}>
           {PLANS.map((plan) => {
@@ -159,14 +156,13 @@ export default function PricingPage() {
                   position: 'relative',
                 }}
               >
-                {/* 뱃지 */}
+
                 {plan.badge && (
                   <div style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', fontSize: '0.6875rem', fontWeight: 700, padding: '0.25rem 0.625rem', borderRadius: '999px' }}>
                     {plan.badge}
                   </div>
                 )}
 
-                {/* 플랜 헤더 */}
                 <div style={{ background: plan.gradient, padding: '1.5rem 1.5rem 1.25rem' }}>
                   <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', margin: '0 0 0.375rem 0' }}>{plan.name}</p>
                   <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.25rem', marginBottom: '0.375rem' }}>
@@ -186,7 +182,6 @@ export default function PricingPage() {
                   <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.875rem', margin: 0 }}>{plan.description}</p>
                 </div>
 
-                {/* 기능 목록 */}
                 <div style={{ padding: '1.25rem 1.5rem' }}>
                   <ul style={{ listStyle: 'none', margin: '0 0 1.5rem 0', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
                     {plan.features.map((f) => (
@@ -226,7 +221,6 @@ export default function PricingPage() {
         </div>
       </div>
 
-      {/* 비교 테이블 (데스크탑) */}
       {!isMobile && (
         <div style={{ maxWidth: '1024px', margin: '0 auto 4rem', padding: '0 1.5rem' }}>
           <h2 style={{ textAlign: 'center', color: c.textPrimary, fontSize: '1.5rem', fontWeight: 700, marginBottom: '2rem' }}>플랜 상세 비교</h2>
@@ -266,7 +260,6 @@ export default function PricingPage() {
         </div>
       )}
 
-      {/* FAQ */}
       <div style={{ maxWidth: '680px', margin: '0 auto 5rem', padding: isMobile ? '0 1rem' : '0 1.5rem' }}>
         <h2 style={{ textAlign: 'center', color: c.textPrimary, fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 700, marginBottom: '1.5rem' }}>자주 묻는 질문</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
@@ -292,7 +285,6 @@ export default function PricingPage() {
         </div>
       </div>
 
-      {/* 하단 CTA */}
       <div style={{ background: c.bgHero, padding: isMobile ? '2.5rem 1rem' : '3rem 1.5rem', textAlign: 'center' }}>
         <h2 style={{ color: 'white', fontSize: isMobile ? '1.375rem' : '1.875rem', fontWeight: 700, marginBottom: '0.75rem' }}>지금 바로 시작하세요</h2>
         <p style={{ color: 'rgba(255,255,255,0.75)', marginBottom: '1.5rem', fontSize: '0.9375rem' }}>무료로 시작하고, 언제든지 업그레이드할 수 있어요</p>

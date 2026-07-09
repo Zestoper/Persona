@@ -97,14 +97,12 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* 구분선 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: '1.5rem 0' }}>
             <div style={{ flex: 1, height: '1px', background: c.border }} />
             <span style={{ fontSize: '0.8125rem', color: c.textMuted, whiteSpace: 'nowrap' }}>또는</span>
             <div style={{ flex: 1, height: '1px', background: c.border }} />
           </div>
 
-          {/* 소셜 로그인 버튼 */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
             <a
               href={`${import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/v1'}/auth/kakao`}
@@ -129,7 +127,6 @@ export default function LoginPage() {
             </Link>
           </p>
 
-          {/* 서버 연결 상태 */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.375rem', marginTop: '1.25rem' }}>
             {serverStatus === 'checking' && (
               <>

@@ -23,12 +23,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     const id = Date.now()
     setToasts((prev) => [...prev, { id, message, type, leaving: false }])
 
-    // 2.5초 후 퇴장 애니메이션 시작
     setTimeout(() => {
       setToasts((prev) => prev.map((t) => t.id === id ? { ...t, leaving: true } : t))
     }, 2500)
 
-    // 3초 후 제거
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id))
     }, 3000)
@@ -44,7 +42,6 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={{ showToast }}>
       {children}
 
-      {/* 토스트 렌더링 — 오른쪽 하단 */}
       <div style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', zIndex: 9999 }}>
         {toasts.map((toast) => {
           const c = colors[toast.type]

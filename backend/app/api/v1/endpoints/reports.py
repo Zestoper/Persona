@@ -11,7 +11,6 @@ from app.schemas.report import ReportCreate, ReportResponse, REPORT_REASONS
 
 router = APIRouter(prefix="/reports", tags=["Reports"])
 
-
 @router.post("", response_model=ReportResponse, status_code=status.HTTP_201_CREATED)
 async def create_report(
     data: ReportCreate,

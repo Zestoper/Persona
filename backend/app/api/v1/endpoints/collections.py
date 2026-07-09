@@ -15,9 +15,6 @@ from app.api.v1.endpoints.admin import require_admin
 
 router = APIRouter(prefix="/collections", tags=["Collections"])
 
-
-# ── 공개 엔드포인트 ──────────────────────────────────────
-
 @router.get("", response_model=list[CollectionResponse])
 async def get_collections(db: AsyncSession = Depends(get_db)):
     """전체 컬렉션 목록을 반환합니다 (is_featured 여부 무관)."""
@@ -42,7 +39,6 @@ async def get_collections(db: AsyncSession = Depends(get_db)):
             created_at=col.created_at,
         ))
     return out
-
 
 @router.get("/{collection_id}", response_model=CollectionDetailResponse)
 async def get_collection(collection_id: int, db: AsyncSession = Depends(get_db)):
@@ -71,9 +67,6 @@ async def get_collection(collection_id: int, db: AsyncSession = Depends(get_db))
         personas=[PersonaListResponse.model_validate(p) for p in personas],
     )
 
-
-# ── 관리자 전용 엔드포인트 ────────────────────────────────
-
 @router.post("", response_model=CollectionResponse, status_code=status.HTTP_201_CREATED)
 async def create_collection(
     data: CollectionCreate,
@@ -90,7 +83,6 @@ async def create_collection(
         emoji=col.emoji, is_featured=col.is_featured, persona_count=0,
         created_at=col.created_at,
     )
-
 
 @router.put("/{collection_id}", response_model=CollectionResponse)
 async def update_collection(
@@ -121,7 +113,6 @@ async def update_collection(
         created_at=col.created_at,
     )
 
-
 @router.delete("/{collection_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_collection(
     collection_id: int,
@@ -134,7 +125,6 @@ async def delete_collection(
         raise HTTPException(status_code=404, detail="컬렉션을 찾을 수 없어요.")
     await db.delete(col)
     await db.commit()
-
 
 @router.post("/{collection_id}/personas/{persona_id}", status_code=status.HTTP_201_CREATED)
 async def add_persona_to_collection(
@@ -165,7 +155,6 @@ async def add_persona_to_collection(
     db.add(cp)
     await db.commit()
     return {"ok": True}
-
 
 @router.delete("/{collection_id}/personas/{persona_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_persona_from_collection(

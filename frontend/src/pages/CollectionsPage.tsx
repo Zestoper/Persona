@@ -34,7 +34,6 @@ export default function CollectionsPage() {
   return (
     <div style={{ minHeight: 'calc(100vh - 64px)', background: c.bgPage, transition: 'background 0.2s ease' }}>
 
-      {/* 헤더 */}
       <div style={{ background: c.bgHero, padding: isMobile ? '2rem 1rem 1.5rem' : '2.5rem 1.5rem 2rem' }}>
         <div style={{ maxWidth: '1024px', margin: '0 auto' }}>
           <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Collections</p>
@@ -47,7 +46,6 @@ export default function CollectionsPage() {
         </div>
       </div>
 
-      {/* 컨텐츠 */}
       <div style={{ maxWidth: '1024px', margin: '0 auto', padding: isMobile ? '1.5rem 1rem' : '2rem 1.5rem' }}>
 
         {isLoading ? (
@@ -110,7 +108,7 @@ function CollectionCard({
         gap: '0.75rem',
       }}
     >
-      {/* 이모지 + 제목 */}
+
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: c.isDark ? 'rgba(99,102,241,0.15)' : '#eef2ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>
           {collection.emoji || '📚'}
@@ -127,14 +125,12 @@ function CollectionCard({
         </div>
       </div>
 
-      {/* 설명 */}
       {collection.description && (
         <p style={{ margin: 0, color: c.textSecondary, fontSize: '0.875rem', lineHeight: 1.55, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
           {collection.description}
         </p>
       )}
 
-      {/* 페르소나 수 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginTop: 'auto' }}>
         <span style={{ fontSize: '0.75rem', color: c.textMuted }}>🤖</span>
         <span style={{ fontSize: '0.8125rem', color: c.textMuted, fontWeight: 500 }}>

@@ -2,13 +2,12 @@ import re
 from pydantic import BaseModel, field_validator
 from datetime import datetime
 
-# 한자·히라가나·가타카나 등 허용하지 않는 문자 범위
 _HANJA_RE = re.compile(
-    r"[一-鿿"   # CJK Unified Ideographs (한자)
-    r"㐀-䶿"    # CJK Extension A
-    r"぀-ゟ"    # Hiragana
-    r"゠-ヿ"    # Katakana
-    r"豈-﫿"    # CJK Compatibility Ideographs
+    r"[一-鿿"
+    r"㐀-䶿"
+    r"぀-ゟ"
+    r"゠-ヿ"
+    r"豈-﫿"
     r"]"
 )
 
@@ -18,7 +17,6 @@ def _check_no_hanja(v: str) -> str:
         raise ValueError(f"한자·일본어 문자는 사용할 수 없어요. (감지된 문자: '{m.group()}')")
     return v
 
-
 class PersonaCreate(BaseModel):
     name: str
     personality: str
@@ -26,7 +24,7 @@ class PersonaCreate(BaseModel):
     speech_style: str | None = None
     is_public: bool = False
     avatar_url: str | None = None
-    tags: str | None = None  # 쉼표 구분, 예: "친구,힐링"
+    tags: str | None = None
 
     @field_validator("name")
     @classmethod
@@ -52,7 +50,6 @@ class PersonaCreate(BaseModel):
         if v is None:
             return v
         return _check_no_hanja(v)
-
 
 class PersonaUpdate(BaseModel):
     name: str | None = None
@@ -92,7 +89,6 @@ class PersonaUpdate(BaseModel):
             return v
         return _check_no_hanja(v)
 
-
 class PersonaResponse(BaseModel):
     id: int
     user_id: int
@@ -108,11 +104,10 @@ class PersonaResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     creator_nickname: str | None = None
-    auto_collections: list[str] = []  # 생성/수정 시 자동으로 추가된 컬렉션 이름 목록
+    auto_collections: list[str] = []
 
     class Config:
         from_attributes = True
-
 
 class PersonaListResponse(BaseModel):
     id: int
@@ -127,17 +122,14 @@ class PersonaListResponse(BaseModel):
     tags: str | None
     created_at: datetime
     creator_nickname: str | None = None
-    my_collections: list[str] = []  # 이 페르소나가 속한 컬렉션 이름 목록
+    my_collections: list[str] = []
 
     class Config:
         from_attributes = True
 
-
-# ── 페르소나 자동 생성 스키마 ──────────────────────────────
 class PersonaGenerateRequest(BaseModel):
     name: str
-    hint: str | None = None  # 어떤 캐릭터인지 한줄 힌트
-
+    hint: str | None = None
 
 class PersonaGenerateResponse(BaseModel):
     personality: str

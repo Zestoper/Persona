@@ -55,7 +55,6 @@ export default function LandingPage() {
   const isMobile = useIsMobile()
   const [visibleMsg, setVisibleMsg] = useState(0)
 
-  // 데모 메시지 순차 표시
   useEffect(() => {
     if (visibleMsg >= DEMO_MESSAGES.length) return
     const t = setTimeout(() => setVisibleMsg((v) => v + 1), 900)
@@ -65,9 +64,8 @@ export default function LandingPage() {
   return (
     <div style={{ background: c.bgPage, transition: 'background 0.2s ease' }}>
 
-      {/* ── 히어로 ─────────────────────────────────────────── */}
       <section style={{ background: c.bgHero, padding: isMobile ? '3.5rem 1rem 4rem' : '5rem 1.5rem 6rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-        {/* 배경 장식 */}
+
         <div style={{ position: 'absolute', top: '-80px', left: '50%', transform: 'translateX(-50%)', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
         <div style={{ maxWidth: '720px', margin: '0 auto', position: 'relative' }}>
@@ -100,7 +98,6 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* 데모 채팅 카드 */}
         <div style={{ maxWidth: '380px', margin: isMobile ? '2.5rem auto 0' : '3.5rem auto 0', background: c.isDark ? '#1e293b' : 'white', borderRadius: '20px', padding: '1.25rem', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', textAlign: 'left' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '1rem', paddingBottom: '0.875rem', borderBottom: `1px solid ${c.border}` }}>
             <div style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg, #f59e0b, #ef4444)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.125rem' }}>📚</div>
@@ -134,7 +131,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 통계 ───────────────────────────────────────────── */}
       <section style={{ background: c.bgCard, borderBottom: `1px solid ${c.border}` }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', padding: isMobile ? '2rem 1rem' : '2.5rem 1.5rem', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', textAlign: 'center' }}>
           {[
@@ -150,7 +146,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 기능 소개 ──────────────────────────────────────── */}
       <section style={{ maxWidth: '1024px', margin: '0 auto', padding: isMobile ? '3rem 1rem' : '5rem 1.5rem' }}>
         <div style={{ textAlign: 'center', marginBottom: isMobile ? '2rem' : '3rem' }}>
           <p style={{ color: '#6366f1', fontSize: '0.8125rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Features</p>
@@ -167,7 +162,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 사용 방법 ──────────────────────────────────────── */}
       <section style={{ background: c.bgSofter, padding: isMobile ? '3rem 1rem' : '5rem 1.5rem' }}>
         <div style={{ maxWidth: '720px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: isMobile ? '2rem' : '3rem' }}>
@@ -193,7 +187,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 요금제 프리뷰 ──────────────────────────────────── */}
       <section style={{ maxWidth: '720px', margin: '0 auto', padding: isMobile ? '3rem 1rem' : '5rem 1.5rem', textAlign: 'center' }}>
         <p style={{ color: '#6366f1', fontSize: '0.8125rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Pricing</p>
         <h2 style={{ color: c.textPrimary, fontSize: isMobile ? '1.5rem' : '2rem', fontWeight: 800, marginBottom: '0.75rem' }}>무료로 시작, 필요할 때 업그레이드</h2>
@@ -226,7 +219,6 @@ export default function LandingPage() {
         </button>
       </section>
 
-      {/* ── 최종 CTA ───────────────────────────────────────── */}
       <section style={{ background: c.bgHero, padding: isMobile ? '3rem 1rem' : '5rem 1.5rem', textAlign: 'center' }}>
         <h2 style={{ color: 'white', fontSize: isMobile ? '1.5rem' : '2.25rem', fontWeight: 800, marginBottom: '0.875rem', lineHeight: 1.25 }}>
           지금 바로 나만의<br />AI 캐릭터를 만들어보세요
@@ -240,7 +232,6 @@ export default function LandingPage() {
         </button>
       </section>
 
-      {/* 푸터 */}
       <footer style={{ background: c.bgCard, borderTop: `1px solid ${c.border}`, padding: isMobile ? '1.5rem 1rem' : '2rem 1.5rem' }}>
         <div style={{ maxWidth: '1024px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>

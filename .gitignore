@@ -28,3 +28,6 @@ backend/static/avatars/*
 .vscode/
 .idea/
 *.swp
+
+# 개인 학습 자료 (비공개)
+Study/

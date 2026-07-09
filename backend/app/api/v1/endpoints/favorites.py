@@ -11,9 +11,6 @@ from app.schemas.persona import PersonaListResponse
 
 router = APIRouter(prefix="/favorites", tags=["Favorites"])
 
-
-# ── 즐겨찾기 토글 (추가 or 제거) ──────────────────────────
-# POST /api/v1/favorites/{persona_id}
 @router.post("/{persona_id}")
 async def toggle_favorite(
     persona_id: int,
@@ -37,9 +34,6 @@ async def toggle_favorite(
         await db.commit()
         return {"persona_id": persona_id, "is_favorited": True}
 
-
-# ── 내 즐겨찾기 목록 조회 ─────────────────────────────────
-# GET /api/v1/favorites
 @router.get("", response_model=list[PersonaListResponse])
 async def get_my_favorites(
     db: AsyncSession = Depends(get_db),
@@ -49,13 +43,10 @@ async def get_my_favorites(
         select(Persona)
         .join(Favorite, Favorite.persona_id == Persona.id)
         .where(Favorite.user_id == current_user.id)
-        .where(Persona.is_public == True)  # noqa: E712
+        .where(Persona.is_public == True)
     )
     return list(result.scalars().all())
 
-
-# ── 즐겨찾기한 persona_id 목록 ────────────────────────────
-# GET /api/v1/favorites/ids
 @router.get("/ids")
 async def get_favorite_ids(
     db: AsyncSession = Depends(get_db),
