@@ -24,7 +24,7 @@ import NotFoundPage from './pages/NotFoundPage'
 
 function HomeRoute() {
   const { user, isLoading } = useAuth()
-  if (isLoading) return null
+  if (isLoading) return <LandingPage />
   if (user) return <Navigate to="/marketplace" replace />
   return <LandingPage />
 }
