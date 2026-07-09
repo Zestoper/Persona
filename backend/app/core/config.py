@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
 
     GROQ_API_KEY: str
+    CEREBRAS_API_KEY: str = ""
 
     KAKAO_CLIENT_ID: str = ""
     KAKAO_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/kakao/callback"

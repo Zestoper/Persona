@@ -1,6 +1,8 @@
 import re
 import asyncio
+import json
 
+import httpx
 from groq import AsyncGroq
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
@@ -166,14 +168,44 @@ async def stream_ai_response(
             ),
             timeout=20.0,
         )
-    except asyncio.TimeoutError:
-        yield "죄송해요, 응답이 너무 오래 걸려요. 잠시 후 다시 시도해주세요. 🙏"
-        return
-
-    try:
         async for chunk in stream:
             delta = chunk.choices[0].delta
             if delta.content:
                 yield _strip_foreign_scripts(delta.content)
-    except asyncio.TimeoutError:
-        yield "\n\n(응답이 중단됐어요. 다시 시도해주세요)"
+        return
+    except Exception:
+        pass
+
+    # Groq 실패 시 Cerebras로 폴백
+    if not settings.CEREBRAS_API_KEY:
+        yield "죄송해요, 응답이 너무 오래 걸려요. 잠시 후 다시 시도해주세요. 🙏"
+        return
+
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as http:
+            async with http.stream(
+                "POST",
+                "https://api.cerebras.ai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {settings.CEREBRAS_API_KEY}"},
+                json={
+                    "model": "llama-3.3-70b",
+                    "messages": messages,
+                    "stream": True,
+                    "max_tokens": 1024,
+                    "temperature": 0.8,
+                },
+            ) as resp:
+                async for line in resp.aiter_lines():
+                    if not line.startswith("data: "):
+                        continue
+                    data = line[6:]
+                    if data == "[DONE]":
+                        break
+                    try:
+                        content = json.loads(data)["choices"][0]["delta"].get("content", "")
+                        if content:
+                            yield _strip_foreign_scripts(content)
+                    except Exception:
+                        continue
+    except Exception:
+        yield "죄송해요, 현재 AI 서비스가 원활하지 않아요. 잠시 후 다시 시도해주세요. 🙏"
