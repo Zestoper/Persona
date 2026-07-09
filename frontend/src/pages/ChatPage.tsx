@@ -32,6 +32,7 @@ export default function ChatPage() {
   const [isAiTyping, setIsAiTyping] = useState(false)
   const [showScrollBtn, setShowScrollBtn] = useState(false)
   const [newMsgCount, setNewMsgCount] = useState(0)
+  const [reconnectKey, setReconnectKey] = useState(0)
 
   const isMobile = useIsMobile()
   const { showToast } = useToast()
@@ -39,6 +40,7 @@ export default function ChatPage() {
   const wsRef = useRef<WebSocket | null>(null)
   const intentionalCloseRef = useRef(false)
   const wasConnectedRef = useRef(false)
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const scrollAreaRef = useRef<HTMLDivElement | null>(null)
   const bottomRef = useRef<HTMLDivElement | null>(null)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
@@ -62,6 +64,8 @@ export default function ChatPage() {
   }
 
   useEffect(() => {
+    intentionalCloseRef.current = false
+    wasConnectedRef.current = false
     const token = localStorage.getItem('token')
     if (!token) { navigate('/login'); return }
 
@@ -170,16 +174,21 @@ export default function ChatPage() {
           navigate(-1)
         } else {
           setIsDisconnected(true)
+          reconnectTimerRef.current = setTimeout(() => {
+            setIsDisconnected(false)
+            setReconnectKey((k) => k + 1)
+          }, 3000)
         }
       }
     }
     return () => {
       clearInterval(pingInterval)
       if (expiryTimer) clearTimeout(expiryTimer)
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current)
       intentionalCloseRef.current = true
       ws.close()
     }
-  }, [personaId])
+  }, [personaId, reconnectKey])
 
   const clearHistory = async () => {
     await api.delete(`/chat/${personaId}/history`)
@@ -269,10 +278,10 @@ export default function ChatPage() {
       {isDisconnected && (
         <div style={{ background: '#fef3c7', borderBottom: '1px solid #fde68a', padding: '0.625rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexShrink: 0 }}>
           <span style={{ fontSize: '0.875rem', color: '#92400e', fontWeight: 500 }}>
-            연결이 끊어졌어요
+            연결이 끊어졌어요 — 3초 후 자동 재연결
           </span>
           <button
-            onClick={() => { intentionalCloseRef.current = false; setIsDisconnected(false); window.location.reload() }}
+            onClick={() => { if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current); setIsDisconnected(false); setReconnectKey((k) => k + 1) }}
             style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#92400e', background: 'rgba(0,0,0,0.08)', border: 'none', borderRadius: '8px', padding: '0.3rem 0.75rem', cursor: 'pointer' }}
           >
             다시 연결
@@ -425,16 +434,6 @@ export default function ChatPage() {
         </div>
       </div>
 
-      <style>{`
-        @keyframes typingBounce {
-          0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-          30% { transform: translateY(-6px); opacity: 1; }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0; }
-        }
-      `}</style>
     </div>
     </>
   )
