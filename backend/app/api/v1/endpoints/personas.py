@@ -82,7 +82,8 @@ async def generate_persona_fields(
         '{"personality": "성격을 2-3문장으로", "background": "배경스토리를 2-3문장으로", "speech_style": "말투를 10자 이내로"}'
     )
     response = await client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="openai/gpt-oss-120b",
+        extra_body={"reasoning_effort": "low"},
         messages=[
             {
                 "role": "system",
@@ -96,7 +97,7 @@ async def generate_persona_fields(
             },
             {"role": "user", "content": prompt},
         ],
-        max_tokens=400,
+        max_tokens=1000,
         temperature=0.7,
     )
     text = response.choices[0].message.content or "{}"

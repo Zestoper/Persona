@@ -45,7 +45,7 @@
 | 프레임워크 | FastAPI |
 | 데이터베이스 | PostgreSQL + SQLAlchemy (async) |
 | 인증 | JWT (python-jose) + bcrypt + OAuth2 (카카오·구글) |
-| AI | Groq API (llama-3.3-70b-versatile) |
+| AI | Groq API (openai/gpt-oss-120b) |
 | 실시간 통신 | WebSocket |
 | HTTP 클라이언트 | httpx (소셜 로그인 토큰 교환) |
 
