@@ -66,12 +66,13 @@ async def _auto_classify(db: AsyncSession, persona: Persona) -> None:
     try:
         client = AsyncGroq(api_key=settings.GROQ_API_KEY)
         res = await client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-120b",
+            extra_body={"reasoning_effort": "low"},
             messages=[
                 {"role": "system", "content": "당신은 AI 페르소나 분류 전문가입니다. JSON 배열만 반환하세요."},
                 {"role": "user", "content": prompt},
             ],
-            max_tokens=100,
+            max_tokens=600,
             temperature=0.1,
         )
         text = res.choices[0].message.content or "[]"

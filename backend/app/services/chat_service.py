@@ -117,12 +117,13 @@ async def _summarize_old_messages(client: AsyncGroq, messages: list[Message]) ->
         for m in messages
     )
     response = await client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="openai/gpt-oss-120b",
+        extra_body={"reasoning_effort": "low"},
         messages=[
             {"role": "system", "content": "다음 대화 내용을 3-5문장으로 간결하게 한국어로 요약하세요. 핵심 주제와 감정 흐름만 담아주세요."},
             {"role": "user", "content": history_text},
         ],
-        max_tokens=300,
+        max_tokens=900,
         temperature=0.3,
     )
     return response.choices[0].message.content or ""
@@ -163,10 +164,11 @@ async def stream_ai_response(
     try:
         stream = await asyncio.wait_for(
             client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="openai/gpt-oss-120b",  # llama-3.3-70b-versatile 2026-08-16 종료
+                extra_body={"reasoning_effort": "low"},
                 messages=messages,
                 stream=True,
-                max_tokens=1024,
+                max_tokens=1536,
                 temperature=0.8,
             ),
             timeout=20.0,
