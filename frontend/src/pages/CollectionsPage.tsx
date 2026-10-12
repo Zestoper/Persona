@@ -4,6 +4,7 @@ import api from '../api/client'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useThemeColors } from '../hooks/useThemeColors'
 import { useToast } from '../context/ToastContext'
+import { Bot, Inbox, Library } from 'lucide-react'
 
 interface Collection {
   id: number
@@ -56,7 +57,7 @@ export default function CollectionsPage() {
           </div>
         ) : collections.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '4rem 1rem' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📭</div>
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center', color: c.textMuted }}><Inbox size={44} strokeWidth={1.5} /></div>
             <p style={{ color: c.textSecondary, fontSize: '1rem' }}>아직 등록된 컬렉션이 없어요</p>
           </div>
         ) : (
@@ -111,7 +112,7 @@ function CollectionCard({
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: c.isDark ? 'rgba(99,102,241,0.15)' : '#eef2ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>
-          {collection.emoji || '📚'}
+          <Library size={22} color="#6366f1" strokeWidth={1.75} />
         </div>
         <div>
           <h3 style={{ margin: 0, color: c.textPrimary, fontWeight: 700, fontSize: '1rem', lineHeight: 1.3 }}>
@@ -132,7 +133,7 @@ function CollectionCard({
       )}
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginTop: 'auto' }}>
-        <span style={{ fontSize: '0.75rem', color: c.textMuted }}>🤖</span>
+        <Bot size={14} color={c.textMuted} />
         <span style={{ fontSize: '0.8125rem', color: c.textMuted, fontWeight: 500 }}>
           페르소나 {collection.persona_count}개
         </span>

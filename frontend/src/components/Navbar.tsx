@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useTheme } from '../context/ThemeContext'
 import { useThemeColors } from '../hooks/useThemeColors'
+import { Bot, Gem, Heart, LayoutGrid, LogIn, LogOut, MessageCircle, Moon, Settings, Store, Sun, User } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 
 export default function Navbar() {
   const { user, logout } = useAuth()
@@ -73,8 +75,8 @@ export default function Navbar() {
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
 
-                <button onClick={toggleTheme} style={{ background: c.bgSoft, border: `1px solid ${c.border}`, borderRadius: '8px', padding: '0.375rem 0.625rem', fontSize: '0.875rem', cursor: 'pointer' }}>
-                  {isDark ? '☀️' : '🌙'}
+                <button onClick={toggleTheme} style={{ background: c.bgSoft, border: `1px solid ${c.border}`, borderRadius: '8px', padding: '0.375rem 0.625rem', fontSize: '0.875rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', color: c.textLabel }} aria-label="테마 전환">
+                  {isDark ? <Sun size={16} /> : <Moon size={16} />}
                 </button>
 
                 {user ? (
@@ -97,14 +99,14 @@ export default function Navbar() {
 
                       {dropOpen && (
                         <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, width: '168px', background: c.bgCard, border: `1px solid ${c.border}`, borderRadius: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', padding: '0.375rem', zIndex: 100 }}>
-                          <DropItem to="/profile" label="프로필" icon="👤" c={c} onClick={() => setDropOpen(false)} />
-                          {user.is_admin && <DropItem to="/admin" label="관리자" icon="⚙️" c={c} onClick={() => setDropOpen(false)} />}
+                          <DropItem to="/profile" label="프로필" icon={User} c={c} onClick={() => setDropOpen(false)} />
+                          {user.is_admin && <DropItem to="/admin" label="관리자" icon={Settings} c={c} onClick={() => setDropOpen(false)} />}
                           <div style={{ height: '1px', background: c.border, margin: '0.25rem 0' }} />
                           <button
                             onClick={() => { setDropOpen(false); logout() }}
                             style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.5rem 0.75rem', background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '0.9375rem', borderRadius: '8px', textAlign: 'left' }}
                           >
-                            <span>🚪</span> 로그아웃
+                            <LogOut size={16} /> 로그아웃
                           </button>
                         </div>
                       )}
@@ -122,8 +124,8 @@ export default function Navbar() {
 
           {isMobile && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-              <button onClick={toggleTheme} style={{ background: c.bgSoft, border: `1px solid ${c.border}`, borderRadius: '8px', padding: '0.375rem 0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}>
-                {isDark ? '☀️' : '🌙'}
+              <button onClick={toggleTheme} style={{ background: c.bgSoft, border: `1px solid ${c.border}`, borderRadius: '8px', padding: '0.375rem 0.5rem', fontSize: '0.875rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', color: c.textLabel }} aria-label="테마 전환">
+                {isDark ? <Sun size={16} /> : <Moon size={16} />}
               </button>
               {user && (
                 <button onClick={() => navigate('/create')} style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', fontSize: '1rem', fontWeight: 700, padding: '0.375rem 0.75rem', borderRadius: '9px', border: 'none', cursor: 'pointer', boxShadow: '0 2px 8px rgba(99,102,241,0.3)' }}>+</button>
@@ -165,30 +167,30 @@ export default function Navbar() {
                 </>
               )}
 
-              <MenuLink to="/marketplace" label="마켓플레이스" icon="🛍️" c={c} active={isActive('/marketplace')} />
-              <MenuLink to="/collections" label="컬렉션" icon="✨" c={c} active={location.pathname.startsWith('/collections')} />
-              {user && <MenuLink to="/my" label="내 페르소나" icon="🤖" c={c} active={isActive('/my')} />}
-              {user && <MenuLink to="/favorites" label="즐겨찾기" icon="♥" c={c} active={isActive('/favorites')} />}
-              {user && <MenuLink to="/conversations" label="대화 목록" icon="💬" c={c} active={isActive('/conversations')} />}
-              <MenuLink to="/pricing" label="요금제" icon="💎" c={c} active={isActive('/pricing')} />
+              <MenuLink to="/marketplace" label="마켓플레이스" icon={Store} c={c} active={isActive('/marketplace')} />
+              <MenuLink to="/collections" label="컬렉션" icon={LayoutGrid} c={c} active={location.pathname.startsWith('/collections')} />
+              {user && <MenuLink to="/my" label="내 페르소나" icon={Bot} c={c} active={isActive('/my')} />}
+              {user && <MenuLink to="/favorites" label="즐겨찾기" icon={Heart} c={c} active={isActive('/favorites')} />}
+              {user && <MenuLink to="/conversations" label="대화 목록" icon={MessageCircle} c={c} active={isActive('/conversations')} />}
+              <MenuLink to="/pricing" label="요금제" icon={Gem} c={c} active={isActive('/pricing')} />
 
               {user ? (
                 <>
                   <div style={{ height: '1px', background: c.border, margin: '0.25rem 0' }} />
-                  <MenuLink to="/profile" label="프로필" icon="👤" c={c} active={isActive('/profile')} />
-                  {user.is_admin && <MenuLink to="/admin" label="관리자" icon="⚙️" c={c} active={isActive('/admin')} />}
+                  <MenuLink to="/profile" label="프로필" icon={User} c={c} active={isActive('/profile')} />
+                  {user.is_admin && <MenuLink to="/admin" label="관리자" icon={Settings} c={c} active={isActive('/admin')} />}
                   <div style={{ height: '1px', background: c.border, margin: '0.25rem 0' }} />
                   <button
                     onClick={() => { setMenuOpen(false); logout() }}
                     style={{ padding: '0.75rem 0.875rem', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', color: '#ef4444', fontSize: '0.9375rem', fontWeight: 500, borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '0.75rem' }}
                   >
-                    <span>🚪</span> 로그아웃
+                    <LogOut size={16} /> 로그아웃
                   </button>
                 </>
               ) : (
                 <>
                   <div style={{ height: '1px', background: c.border, margin: '0.25rem 0' }} />
-                  <MenuLink to="/login" label="로그인" icon="🔑" c={c} active={isActive('/login')} />
+                  <MenuLink to="/login" label="로그인" icon={LogIn} c={c} active={isActive('/login')} />
                   <div style={{ marginTop: '0.5rem' }}>
                     <Link to="/register" style={{ display: 'block', textAlign: 'center', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', fontWeight: 700, padding: '0.875rem', borderRadius: '12px', textDecoration: 'none', fontSize: '0.9375rem', boxShadow: '0 4px 12px rgba(99,102,241,0.3)' }}>
                       무료로 시작하기
@@ -204,25 +206,25 @@ export default function Navbar() {
   )
 }
 
-function DropItem({ to, label, icon, c, onClick }: { to: string; label: string; icon: string; c: ReturnType<typeof useThemeColors>; onClick: () => void }) {
+function DropItem({ to, label, icon: Icon, c, onClick }: { to: string; label: string; icon: LucideIcon; c: ReturnType<typeof useThemeColors>; onClick: () => void }) {
   return (
     <Link
       to={to}
       onClick={onClick}
       style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.5rem 0.75rem', borderRadius: '8px', textDecoration: 'none', color: c.textLabel, fontSize: '0.9375rem', fontWeight: 500 }}
     >
-      <span>{icon}</span> {label}
+      <Icon size={16} /> {label}
     </Link>
   )
 }
 
-function MenuLink({ to, label, icon, c, active }: { to: string; label: string; icon: string; c: ReturnType<typeof useThemeColors>; active: boolean }) {
+function MenuLink({ to, label, icon: Icon, c, active }: { to: string; label: string; icon: LucideIcon; c: ReturnType<typeof useThemeColors>; active: boolean }) {
   return (
     <Link
       to={to}
       style={{ padding: '0.75rem 0.875rem', borderRadius: '10px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.75rem', background: active ? (c.isDark ? '#312e81' : '#eef2ff') : 'transparent', color: active ? '#6366f1' : c.textLabel, fontWeight: active ? 600 : 500, fontSize: '0.9375rem' }}
     >
-      <span>{icon}</span> {label}
+      <Icon size={16} /> {label}
     </Link>
   )
 }

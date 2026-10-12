@@ -7,6 +7,7 @@ import { useIsMobile } from '../hooks/useIsMobile'
 import { useToast } from '../context/ToastContext'
 import PersonaAvatar from '../components/PersonaAvatar'
 import { SkeletonCard } from '../components/Skeleton'
+import { ArrowLeft, Heart } from 'lucide-react'
 
 interface Persona {
   id: number
@@ -133,9 +134,9 @@ export default function PersonaDetailPage() {
         <div style={{ maxWidth: '720px', margin: '0 auto' }}>
           <button
             onClick={() => navigate(-1)}
-            style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: '8px', padding: '0.375rem 0.875rem', fontSize: '0.8125rem', cursor: 'pointer', marginBottom: '1.25rem' }}
+            style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: '8px', padding: '0.375rem 0.875rem', fontSize: '0.8125rem', cursor: 'pointer', marginBottom: '1.25rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
           >
-            ← 뒤로
+            <ArrowLeft size={14} /> 뒤로
           </button>
           <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
             <PersonaAvatar name={persona.name} avatarUrl={persona.avatar_url} size={isMobile ? 72 : 90} />
@@ -186,9 +187,9 @@ export default function PersonaDetailPage() {
             <button
               onClick={handleToggleFavorite}
               disabled={favLoading}
-              style={{ padding: '0.75rem 1.25rem', borderRadius: '12px', border: `1.5px solid ${isFavorited ? '#ef4444' : c.borderStrong}`, background: isFavorited ? (c.isDark ? '#2d1a1a' : '#fff5f5') : c.bgCard, color: isFavorited ? '#ef4444' : c.textSecondary, cursor: 'pointer', fontSize: '0.9375rem', fontWeight: 600, whiteSpace: 'nowrap' }}
+              style={{ padding: '0.75rem 1.25rem', borderRadius: '12px', border: `1.5px solid ${isFavorited ? '#ef4444' : c.borderStrong}`, background: isFavorited ? (c.isDark ? '#2d1a1a' : '#fff5f5') : c.bgCard, color: isFavorited ? '#ef4444' : c.textSecondary, cursor: 'pointer', fontSize: '0.9375rem', fontWeight: 600, whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '0.375rem' }}
             >
-              {isFavorited ? '♥ 즐겨찾기' : '♡ 즐겨찾기'}
+              <Heart size={16} fill={isFavorited ? 'currentColor' : 'none'} /> 즐겨찾기
             </button>
           )}
 

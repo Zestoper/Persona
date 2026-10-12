@@ -7,6 +7,7 @@ import { useThemeColors } from '../hooks/useThemeColors'
 import { useToast } from '../context/ToastContext'
 import PersonaCard, { type PersonaCardData as Persona } from '../components/PersonaCard'
 import { SkeletonCard } from '../components/Skeleton'
+import { Heart, SearchX, X } from 'lucide-react'
 
 const POPULAR_TAGS = ['친구', '연인', '멘토', '캐릭터', '판타지', '학교', '직장', '힐링']
 
@@ -200,9 +201,11 @@ export default function MarketplacePage() {
                   padding: '0.375rem 0.625rem', borderRadius: '999px', fontSize: '0.8125rem',
                   border: `1.5px solid ${c.borderStrong}`, cursor: 'pointer',
                   background: c.bgCard, color: c.textMuted,
+                  display: 'inline-flex', alignItems: 'center',
                 }}
+                aria-label="태그 필터 해제"
               >
-                ✕
+                <X size={14} />
               </button>
             )}
           </form>
@@ -232,9 +235,10 @@ export default function MarketplacePage() {
                   border: 'none', cursor: 'pointer',
                   background: showFavoritesOnly ? '#fef3c7' : c.bgSoft,
                   color: showFavoritesOnly ? '#d97706' : c.textSecondary,
+                  display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
                 }}
               >
-                ♥ 즐겨찾기
+                <Heart size={14} fill={showFavoritesOnly ? 'currentColor' : 'none'} /> 즐겨찾기
               </button>
             )}
           </div>
@@ -255,7 +259,7 @@ export default function MarketplacePage() {
         {!isLoading && displayedPersonas.length === 0 && (
           <div style={{ textAlign: 'center', padding: '5rem 1rem' }}>
             <div style={{ width: '64px', height: '64px', background: c.bgSoft, borderRadius: '50%', margin: '0 auto 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: '1.5rem', color: c.textMuted }}>{showFavoritesOnly ? '♥' : '?'}</span>
+              {showFavoritesOnly ? <Heart size={26} color={c.textMuted} strokeWidth={1.75} /> : <SearchX size={26} color={c.textMuted} strokeWidth={1.75} />}
             </div>
             <p style={{ color: c.textSecondary, marginBottom: '1.5rem' }}>
               {showFavoritesOnly ? '즐겨찾기한 캐릭터가 없어요' : tagFilter ? `#${tagFilter} 태그의 캐릭터가 없어요` : search ? `"${search}"에 해당하는 캐릭터가 없어요` : '아직 공개된 캐릭터가 없어요'}

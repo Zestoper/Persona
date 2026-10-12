@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useCallback } from 'react'
 import type { ReactNode } from 'react'
+import { Check, Info, X } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 
 type ToastType = 'success' | 'error' | 'info'
 
@@ -32,10 +34,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     }, 3000)
   }, [])
 
-  const colors: Record<ToastType, { bg: string; border: string; icon: string; color: string }> = {
-    success: { bg: '#f0fdf4', border: '#bbf7d0', icon: '✓', color: '#16a34a' },
-    error:   { bg: '#fef2f2', border: '#fecaca', icon: '✕', color: '#dc2626' },
-    info:    { bg: '#eef2ff', border: '#c7d2fe', icon: 'i', color: '#6366f1' },
+  const colors: Record<ToastType, { bg: string; border: string; icon: LucideIcon; color: string }> = {
+    success: { bg: '#f0fdf4', border: '#bbf7d0', icon: Check, color: '#16a34a' },
+    error:   { bg: '#fef2f2', border: '#fecaca', icon: X, color: '#dc2626' },
+    info:    { bg: '#eef2ff', border: '#c7d2fe', icon: Info, color: '#6366f1' },
   }
 
   return (
@@ -58,7 +60,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               }}
             >
               <span style={{ width: '20px', height: '20px', borderRadius: '50%', background: c.color, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6875rem', fontWeight: 700, flexShrink: 0 }}>
-                {c.icon}
+                <c.icon size={12} strokeWidth={3} />
               </span>
               <span style={{ fontSize: '0.875rem', color: '#111827', lineHeight: 1.4 }}>{toast.message}</span>
             </div>

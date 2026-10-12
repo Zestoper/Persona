@@ -7,6 +7,7 @@ import { useThemeColors } from '../hooks/useThemeColors'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/client'
 import ConfirmModal from '../components/ConfirmModal'
+import { ArrowDown, ArrowLeft } from 'lucide-react'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -250,9 +251,10 @@ export default function ChatPage() {
       <div style={{ background: c.bgCard, borderBottom: `1px solid ${c.border}`, padding: '0 1.25rem', height: '56px', display: 'flex', alignItems: 'center', gap: '0.875rem', flexShrink: 0 }}>
         <button
           onClick={() => navigate(-1)}
-          style={{ background: 'none', border: 'none', color: c.textMuted, cursor: 'pointer', fontSize: '1.125rem', padding: '0.25rem', lineHeight: 1 }}
+          style={{ background: 'none', border: 'none', color: c.textMuted, cursor: 'pointer', fontSize: '1.125rem', padding: '0.25rem', lineHeight: 1, display: 'inline-flex' }}
+          aria-label="뒤로"
         >
-          ←
+          <ArrowLeft size={20} />
         </button>
 
         <button
@@ -380,7 +382,7 @@ export default function ChatPage() {
             onClick={() => scrollToBottom(true)}
             style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', border: 'none', borderRadius: '999px', padding: '0.5rem 1.25rem', fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(99,102,241,0.4)', display: 'flex', alignItems: 'center', gap: '0.375rem' }}
           >
-            {newMsgCount > 0 ? `↓ 새 메시지 ${newMsgCount}개` : '↓ 아래로'}
+            <ArrowDown size={14} /> {newMsgCount > 0 ? `새 메시지 ${newMsgCount}개` : '아래로'}
           </button>
         </div>
       )}

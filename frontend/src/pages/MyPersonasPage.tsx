@@ -151,7 +151,7 @@ function PersonaRow({ persona, isMobile, c, onChat, onEdit, onDelete }: {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginTop: '0.375rem' }}>
                 {collections.map((col) => (
                   <span key={col} style={{ fontSize: '0.625rem', padding: '0.1rem 0.4rem', borderRadius: '999px', background: c.isDark ? '#1e3a5f' : '#eff6ff', color: c.isDark ? '#60a5fa' : '#2563eb', fontWeight: 500, border: `1px solid ${c.isDark ? '#1d4ed8' : '#bfdbfe'}` }}>
-                    ✨ {col}
+                    {col}
                   </span>
                 ))}
               </div>

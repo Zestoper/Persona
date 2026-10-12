@@ -2,35 +2,36 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useThemeColors } from '../hooks/useThemeColors'
 import { useIsMobile } from '../hooks/useIsMobile'
+import { ArrowRight, Check, Lock, Moon, Store, UserRoundPen, Wand2, Zap } from 'lucide-react'
 
 const FEATURES = [
   {
-    icon: '🎭',
+    icon: UserRoundPen,
     title: '나만의 AI 캐릭터',
     desc: '이름, 성격, 말투, 배경스토리까지 직접 설정해서 세상에 하나뿐인 AI 친구를 만들어보세요.',
   },
   {
-    icon: '⚡',
+    icon: Zap,
     title: '실시간 스트리밍 대화',
     desc: '답변이 한 글자씩 실시간으로 생성되어 마치 실제로 대화하는 것 같은 경험을 제공해요.',
   },
   {
-    icon: '✨',
+    icon: Wand2,
     title: 'AI 자동 설계',
     desc: '이름만 입력하면 AI가 성격, 배경스토리, 말투를 자동으로 제안해줘요. 10초 만에 완성.',
   },
   {
-    icon: '🛍️',
+    icon: Store,
     title: '마켓플레이스',
     desc: '다른 사람이 만든 캐릭터와 대화하고, 내 캐릭터를 공개해서 공유할 수 있어요.',
   },
   {
-    icon: '🌙',
+    icon: Moon,
     title: '다크모드 지원',
     desc: '눈이 편한 다크모드를 지원해요. 취향에 맞게 언제든지 전환할 수 있어요.',
   },
   {
-    icon: '🔒',
+    icon: Lock,
     title: '안전한 개인정보',
     desc: '대화 내용은 암호화되어 안전하게 저장되며, 비공개 캐릭터는 본인만 볼 수 있어요.',
   },
@@ -44,9 +45,9 @@ const STEPS = [
 
 const DEMO_MESSAGES = [
   { role: 'user', text: '안녕! 오늘 어떻게 지냈어?' },
-  { role: 'ai', text: '어머, 드디어 왔구나! 나는 오늘 책을 세 권이나 읽었어 📚 너는요? 뭔가 재미있는 일 있었어?' },
+  { role: 'ai', text: '어머, 드디어 왔구나! 나는 오늘 책을 세 권이나 읽었어. 너는? 뭔가 재미있는 일 있었어?' },
   { role: 'user', text: '회사에서 발표가 있었는데 잘 됐어!' },
-  { role: 'ai', text: '정말?! 대박이다!! 역시 네가 잘 할 줄 알았어 🎉 어떤 내용으로 발표했어? 나 너무 궁금한데~' },
+  { role: 'ai', text: '정말?! 대박이다!! 역시 네가 잘 할 줄 알았어! 어떤 내용으로 발표했어? 나 너무 궁금한데~' },
 ]
 
 export default function LandingPage() {
@@ -85,9 +86,9 @@ export default function LandingPage() {
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             <button
               onClick={() => navigate('/register')}
-              style={{ background: 'white', color: '#6366f1', border: 'none', borderRadius: '14px', padding: isMobile ? '0.875rem 1.75rem' : '1rem 2.5rem', fontSize: isMobile ? '0.9375rem' : '1.0625rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}
+              style={{ background: 'white', color: '#6366f1', border: 'none', borderRadius: '14px', padding: isMobile ? '0.875rem 1.75rem' : '1rem 2.5rem', fontSize: isMobile ? '0.9375rem' : '1.0625rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.375rem' }}
             >
-              무료로 시작하기 →
+              무료로 시작하기 <ArrowRight size={18} />
             </button>
             <button
               onClick={() => navigate('/marketplace')}
@@ -100,7 +101,7 @@ export default function LandingPage() {
 
         <div style={{ maxWidth: '380px', margin: isMobile ? '2.5rem auto 0' : '3.5rem auto 0', background: c.isDark ? '#1e293b' : 'white', borderRadius: '20px', padding: '1.25rem', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', textAlign: 'left' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '1rem', paddingBottom: '0.875rem', borderBottom: `1px solid ${c.border}` }}>
-            <div style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg, #f59e0b, #ef4444)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.125rem' }}>📚</div>
+            <div style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg, #f59e0b, #ef4444)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 700, color: 'white' }}>소</div>
             <div>
               <p style={{ fontWeight: 700, color: c.textPrimary, margin: 0, fontSize: '0.9375rem' }}>소피아</p>
               <p style={{ fontSize: '0.6875rem', color: '#10b981', margin: 0 }}>온라인</p>
@@ -154,7 +155,7 @@ export default function LandingPage() {
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '1rem' }}>
           {FEATURES.map((f) => (
             <div key={f.title} style={{ background: c.bgCard, borderRadius: '16px', padding: '1.5rem', border: `1px solid ${c.border}` }}>
-              <div style={{ fontSize: '1.75rem', marginBottom: '0.875rem' }}>{f.icon}</div>
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: c.isDark ? 'rgba(99,102,241,0.15)' : '#eef2ff', color: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.875rem' }}><f.icon size={20} strokeWidth={1.75} /></div>
               <h3 style={{ color: c.textPrimary, fontSize: '1rem', fontWeight: 700, margin: '0 0 0.5rem 0' }}>{f.title}</h3>
               <p style={{ color: c.textSecondary, fontSize: '0.875rem', lineHeight: 1.6, margin: 0 }}>{f.desc}</p>
             </div>
@@ -204,7 +205,7 @@ export default function LandingPage() {
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {p.features.map((f) => (
                   <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: c.textSecondary }}>
-                    <span style={{ color: '#10b981', fontWeight: 700 }}>✓</span> {f}
+                    <Check size={16} color="#10b981" strokeWidth={2.5} style={{ flexShrink: 0 }} /> {f}
                   </li>
                 ))}
               </ul>
@@ -213,9 +214,9 @@ export default function LandingPage() {
         </div>
         <button
           onClick={() => navigate('/pricing')}
-          style={{ background: 'none', border: `1.5px solid ${c.borderStrong}`, borderRadius: '12px', padding: '0.75rem 2rem', color: c.textSecondary, fontSize: '0.9375rem', fontWeight: 600, cursor: 'pointer' }}
+          style={{ background: 'none', border: `1.5px solid ${c.borderStrong}`, borderRadius: '12px', padding: '0.75rem 2rem', color: c.textSecondary, fontSize: '0.9375rem', fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.375rem' }}
         >
-          전체 요금제 보기 →
+          전체 요금제 보기 <ArrowRight size={18} />
         </button>
       </section>
 
@@ -226,9 +227,9 @@ export default function LandingPage() {
         <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.9375rem', marginBottom: '2rem' }}>무료로 시작할 수 있어요. 신용카드 필요 없음.</p>
         <button
           onClick={() => navigate('/register')}
-          style={{ background: 'white', color: '#6366f1', border: 'none', borderRadius: '14px', padding: isMobile ? '0.875rem 2rem' : '1rem 3rem', fontSize: isMobile ? '0.9375rem' : '1.0625rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}
+          style={{ background: 'white', color: '#6366f1', border: 'none', borderRadius: '14px', padding: isMobile ? '0.875rem 2rem' : '1rem 3rem', fontSize: isMobile ? '0.9375rem' : '1.0625rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 20px rgba(0,0,0,0.2)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.375rem' }}
         >
-          무료로 시작하기 →
+          무료로 시작하기 <ArrowRight size={18} />
         </button>
       </section>
 

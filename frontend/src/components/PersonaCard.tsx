@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import PersonaAvatar from './PersonaAvatar'
 import { useThemeColors } from '../hooks/useThemeColors'
+import { ArrowRight, Heart } from 'lucide-react'
 
 export interface PersonaCardData {
   id: number
@@ -48,12 +49,12 @@ export default function PersonaCard({
           position: 'absolute', top: '0.75rem', right: '0.75rem',
           background: 'none', border: 'none', cursor: 'pointer',
           fontSize: '1rem', color: isFavorited ? '#ef4444' : c.textMuted,
-          padding: '0.25rem', lineHeight: 1,
+          padding: '0.25rem', lineHeight: 1, display: 'inline-flex',
           transition: 'color 0.15s, transform 0.15s',
           transform: isFavorited ? 'scale(1.2)' : 'scale(1)',
         }}
       >
-        {isFavorited ? '♥' : '♡'}
+        <Heart size={18} fill={isFavorited ? 'currentColor' : 'none'} />
       </button>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem', paddingRight: '1.5rem' }}>
@@ -95,8 +96,8 @@ export default function PersonaCard({
             </span>
           )}
         </div>
-        <span style={{ fontSize: '0.8125rem', color: hovered ? '#6366f1' : c.textMuted, fontWeight: 600, transition: 'color 0.18s' }}>
-          대화하기 →
+        <span style={{ fontSize: '0.8125rem', color: hovered ? '#6366f1' : c.textMuted, fontWeight: 600, transition: 'color 0.18s', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+          대화하기 <ArrowRight size={14} />
         </span>
       </div>
     </div>
