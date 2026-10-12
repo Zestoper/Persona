@@ -9,6 +9,7 @@ from groq import AsyncGroq
 from app.db.database import get_db
 from app.models.user import User
 from app.core.config import settings
+from app.services.llm import groq_create
 from app.core.security import get_current_user, get_optional_user
 from app.schemas.persona import (
     PersonaCreate, PersonaUpdate, PersonaResponse, PersonaListResponse,
@@ -81,9 +82,8 @@ async def generate_persona_fields(
         "위 정보로 AI 채팅 페르소나를 설계하세요. 반드시 아래 JSON만 반환하세요 (다른 텍스트 없이):\n"
         '{"personality": "성격을 2-3문장으로", "background": "배경스토리를 2-3문장으로", "speech_style": "말투를 10자 이내로"}'
     )
-    response = await client.chat.completions.create(
-        model="openai/gpt-oss-120b",
-        extra_body={"reasoning_effort": "low"},
+    response = await groq_create(
+        client,
         messages=[
             {
                 "role": "system",
