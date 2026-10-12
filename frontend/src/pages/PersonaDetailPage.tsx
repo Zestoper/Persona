@@ -7,7 +7,7 @@ import { useIsMobile } from '../hooks/useIsMobile'
 import { useToast } from '../context/ToastContext'
 import PersonaAvatar from '../components/PersonaAvatar'
 import { SkeletonCard } from '../components/Skeleton'
-import { ArrowLeft, Heart } from 'lucide-react'
+import { ArrowLeft, Copy, Heart } from 'lucide-react'
 
 interface Persona {
   id: number
@@ -197,9 +197,9 @@ export default function PersonaDetailPage() {
             <button
               onClick={handleFork}
               disabled={forkLoading}
-              style={{ padding: '0.75rem 1.25rem', borderRadius: '12px', border: `1.5px solid ${c.borderStrong}`, background: c.bgCard, color: c.textSecondary, cursor: 'pointer', fontSize: '0.9375rem', fontWeight: 600, whiteSpace: 'nowrap' }}
+              style={{ padding: '0.75rem 1.25rem', borderRadius: '12px', border: `1.5px solid ${c.borderStrong}`, background: c.bgCard, color: c.textSecondary, cursor: 'pointer', fontSize: '0.9375rem', fontWeight: 600, whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '0.375rem' }}
             >
-              {forkLoading ? '복사 중...' : '⎘ 복사'}
+              {forkLoading ? '복사 중...' : <><Copy size={16} /> 복사</>}
             </button>
           )}
 
