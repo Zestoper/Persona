@@ -12,6 +12,7 @@ from sqlalchemy import select, delete
 from typing import AsyncGenerator
 
 from app.core.config import settings
+from app.services.llm import groq_create
 from app.models.conversation import Conversation
 from app.models.message import Message
 from app.models.persona import Persona
@@ -116,9 +117,8 @@ async def _summarize_old_messages(client: AsyncGroq, messages: list[Message]) ->
         f"{'사용자' if m.role == 'user' else 'AI'}: {m.content}"
         for m in messages
     )
-    response = await client.chat.completions.create(
-        model="openai/gpt-oss-120b",
-        extra_body={"reasoning_effort": "low"},
+    response = await groq_create(
+        client,
         messages=[
             {"role": "system", "content": "다음 대화 내용을 3-5문장으로 간결하게 한국어로 요약하세요. 핵심 주제와 감정 흐름만 담아주세요."},
             {"role": "user", "content": history_text},
@@ -163,9 +163,9 @@ async def stream_ai_response(
 
     try:
         stream = await asyncio.wait_for(
-            client.chat.completions.create(
-                model="openai/gpt-oss-120b",  # llama-3.3-70b-versatile 2026-08-16 종료
-                extra_body={"reasoning_effort": "low"},
+            # gpt-oss-120b → gpt-oss-20b → qwen3.8 순서로 시도, 전부 막히면 아래 Cerebras 스트리밍
+            groq_create(
+                client,
                 messages=messages,
                 stream=True,
                 max_tokens=1536,

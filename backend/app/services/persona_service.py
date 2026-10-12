@@ -6,6 +6,7 @@ from fastapi import HTTPException, status
 from groq import AsyncGroq
 
 from app.core.config import settings
+from app.services.llm import groq_create
 from app.models.persona import Persona
 from app.models.user import User
 from app.models.collection import Collection, CollectionPersona
@@ -65,9 +66,8 @@ async def _auto_classify(db: AsyncSession, persona: Persona) -> None:
 
     try:
         client = AsyncGroq(api_key=settings.GROQ_API_KEY)
-        res = await client.chat.completions.create(
-            model="openai/gpt-oss-120b",
-            extra_body={"reasoning_effort": "low"},
+        res = await groq_create(
+            client,
             messages=[
                 {"role": "system", "content": "당신은 AI 페르소나 분류 전문가입니다. JSON 배열만 반환하세요."},
                 {"role": "user", "content": prompt},
