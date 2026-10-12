@@ -7,6 +7,8 @@ import { useIsMobile } from '../hooks/useIsMobile'
 import { useToast } from '../context/ToastContext'
 import { SkeletonRow } from '../components/Skeleton'
 import ConfirmModal from '../components/ConfirmModal'
+import { Bot, Clock, Flag, Library, Mail, MessageCircle, User } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 
 interface Stats {
   total_users: number
@@ -96,7 +98,7 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [confirmState, setConfirmState] = useState<{ message: string; subMessage: string; onConfirm: () => void } | null>(null)
 
-  const [newCollection, setNewCollection] = useState({ title: '', description: '', emoji: '📚' })
+  const [newCollection, setNewCollection] = useState({ title: '', description: '', emoji: '' })
   const [expandedColId, setExpandedColId] = useState<number | null>(null)
   const [colPersonas, setColPersonas] = useState<CollectionPersona[]>([])
   const [addSearch, setAddSearch] = useState('')
@@ -150,7 +152,7 @@ export default function AdminPage() {
     try {
       const res = await api.post('/collections', newCollection)
       setCollections((prev) => [res.data, ...prev])
-      setNewCollection({ title: '', description: '', emoji: '📚' })
+      setNewCollection({ title: '', description: '', emoji: '' })
       showToast('컬렉션이 생성됐어요', 'success')
     } catch { showToast('생성에 실패했어요', 'error') }
   }
@@ -315,18 +317,18 @@ export default function AdminPage() {
         {!isLoading && tab === 'stats' && stats && (
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: '1rem' }}>
             {[
-              { label: '전체 유저',      value: stats.total_users,         icon: '👤' },
-              { label: '전체 페르소나',  value: stats.total_personas,      icon: '🤖' },
-              { label: '전체 대화방',    value: stats.total_conversations, icon: '💬' },
-              { label: '전체 메시지',    value: stats.total_messages,      icon: '📨' },
-              { label: '전체 신고',      value: stats.total_reports,       icon: '🚨' },
-              { label: '대기 신고',      value: stats.pending_reports,     icon: '⏳', highlight: stats.pending_reports > 0 },
+              { label: '전체 유저',      value: stats.total_users,         icon: User },
+              { label: '전체 페르소나',  value: stats.total_personas,      icon: Bot },
+              { label: '전체 대화방',    value: stats.total_conversations, icon: MessageCircle },
+              { label: '전체 메시지',    value: stats.total_messages,      icon: Mail },
+              { label: '전체 신고',      value: stats.total_reports,       icon: Flag },
+              { label: '대기 신고',      value: stats.pending_reports,     icon: Clock, highlight: stats.pending_reports > 0 },
             ].map((item) => (
               <div
                 key={item.label}
                 style={{ background: c.bgCard, borderRadius: '16px', padding: '1.5rem', border: item.highlight ? '1.5px solid #f59e0b' : `1px solid ${c.border}` }}
               >
-                <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{item.icon}</div>
+                <div style={{ marginBottom: '0.75rem', color: item.highlight ? '#d97706' : c.textMuted }}><item.icon size={22} strokeWidth={1.75} /></div>
                 <div style={{ fontSize: isMobile ? '1.5rem' : '2rem', fontWeight: 700, color: item.highlight ? '#d97706' : c.textPrimary, marginBottom: '0.25rem' }}>
                   {item.value.toLocaleString()}
                 </div>
@@ -355,7 +357,7 @@ export default function AdminPage() {
             </div>
 
             {reports.length === 0
-              ? <EmptyState icon="🚨" text="신고 내역이 없어요" c={c} />
+              ? <EmptyState icon={Flag} text="신고 내역이 없어요" c={c} />
               : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   {reports.map((r) => {
@@ -411,7 +413,7 @@ export default function AdminPage() {
               const q = userSearch.toLowerCase()
               return !q || u.nickname.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
             }).length === 0
-              ? <EmptyState icon="👤" text="유저가 없어요" c={c} />
+              ? <EmptyState icon={User} text="유저가 없어요" c={c} />
               : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
                 {users.filter((u) => {
@@ -463,7 +465,7 @@ export default function AdminPage() {
               const q = personaSearch.toLowerCase()
               return !q || p.name.toLowerCase().includes(q) || p.user_nickname.toLowerCase().includes(q)
             }).length === 0
-              ? <EmptyState icon="🤖" text="페르소나가 없어요" c={c} />
+              ? <EmptyState icon={Bot} text="페르소나가 없어요" c={c} />
               : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
                 {personas.filter((p) => {
@@ -517,12 +519,6 @@ export default function AdminPage() {
               <p style={{ fontWeight: 700, color: c.textPrimary, margin: '0 0 1rem 0', fontSize: '0.9375rem' }}>새 컬렉션 만들기</p>
               <div style={{ display: 'flex', gap: '0.625rem', flexWrap: 'wrap' }}>
                 <input
-                  value={newCollection.emoji}
-                  onChange={(e) => setNewCollection((p) => ({ ...p, emoji: e.target.value }))}
-                  placeholder="이모지"
-                  style={{ width: '72px', padding: '0.625rem 0.75rem', borderRadius: '10px', border: `1.5px solid ${c.borderStrong}`, background: c.bgInput, color: c.textPrimary, fontSize: '1.125rem', outline: 'none', textAlign: 'center', boxSizing: 'border-box' }}
-                />
-                <input
                   value={newCollection.title}
                   onChange={(e) => setNewCollection((p) => ({ ...p, title: e.target.value }))}
                   placeholder="컬렉션 제목 (예: 치매 예방)"
@@ -541,7 +537,7 @@ export default function AdminPage() {
             </div>
 
             {collections.length === 0
-              ? <EmptyState icon="✨" text="컬렉션이 없어요" c={c} />
+              ? <EmptyState icon={Library} text="컬렉션이 없어요" c={c} />
               : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   {collections.map((col) => {
@@ -558,7 +554,7 @@ export default function AdminPage() {
 
                         <div style={{ padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: 0 }}>
-                            <span style={{ fontSize: '1.5rem' }}>{col.emoji || '📚'}</span>
+                            <Library size={22} strokeWidth={1.75} color="#6366f1" style={{ flexShrink: 0 }} />
                             <div>
                               <span style={{ fontWeight: 700, color: c.textPrimary }}>{col.title}</span>
                               {col.description && <p style={{ fontSize: '0.8125rem', color: c.textMuted, margin: '0.125rem 0 0 0' }}>{col.description}</p>}
@@ -646,10 +642,10 @@ function actionBtn(color: string, bg: string): React.CSSProperties {
   return { padding: '0.375rem 0.875rem', borderRadius: '8px', border: 'none', background: bg, color, fontWeight: 600, fontSize: '0.8125rem', cursor: 'pointer', whiteSpace: 'nowrap' }
 }
 
-function EmptyState({ icon, text, c }: { icon: string; text: string; c: ReturnType<typeof useThemeColors> }) {
+function EmptyState({ icon: Icon, text, c }: { icon: LucideIcon; text: string; c: ReturnType<typeof useThemeColors> }) {
   return (
     <div style={{ textAlign: 'center', padding: '4rem', color: c.textMuted }}>
-      <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>{icon}</div>
+      <div style={{ marginBottom: '0.75rem', display: 'flex', justifyContent: 'center' }}><Icon size={32} strokeWidth={1.5} /></div>
       <p style={{ margin: 0 }}>{text}</p>
     </div>
   )

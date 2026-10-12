@@ -5,6 +5,7 @@ import { useThemeColors } from '../hooks/useThemeColors'
 import { useIsMobile } from '../hooks/useIsMobile'
 import PersonaAvatar from '../components/PersonaAvatar'
 import { SkeletonRow } from '../components/Skeleton'
+import { MessageCircle } from 'lucide-react'
 
 interface ConversationItem {
   id: number
@@ -66,7 +67,7 @@ export default function ConversationsPage() {
         {!isLoading && conversations.length === 0 && (
           <div style={{ textAlign: 'center', padding: '5rem 1rem' }}>
             <div style={{ width: '64px', height: '64px', background: c.bgSoft, borderRadius: '50%', margin: '0 auto 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: '1.5rem' }}>💬</span>
+              <MessageCircle size={26} color={c.textMuted} strokeWidth={1.75} />
             </div>
             <p style={{ color: c.textSecondary, marginBottom: '1.5rem' }}>아직 대화 기록이 없어요</p>
             <button

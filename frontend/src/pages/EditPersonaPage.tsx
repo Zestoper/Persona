@@ -110,7 +110,7 @@ export default function EditPersonaPage() {
 
       const autoCollections: string[] = res.data.auto_collections || []
       if (autoCollections.length > 0) {
-        showToast(`✨ '${autoCollections.join(', ')}' 컬렉션에 자동으로 추가됐어요!`, 'success')
+        showToast(`'${autoCollections.join(', ')}' 컬렉션에 자동으로 추가됐어요!`, 'success')
       }
 
       navigate('/my')

@@ -7,6 +7,7 @@ import { useThemeColors } from '../hooks/useThemeColors'
 import { useToast } from '../context/ToastContext'
 import PersonaCard, { type PersonaCardData } from '../components/PersonaCard'
 import { SkeletonCard } from '../components/Skeleton'
+import { ArrowLeft, Bot, Library } from 'lucide-react'
 
 interface CollectionDetail {
   id: number
@@ -84,13 +85,13 @@ export default function CollectionDetailPage() {
         <div style={{ maxWidth: '1024px', margin: '0 auto' }}>
           <button
             onClick={() => navigate('/collections')}
-            style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'rgba(255,255,255,0.85)', fontSize: '0.8125rem', fontWeight: 500, padding: '0.375rem 0.875rem', borderRadius: '8px', cursor: 'pointer', marginBottom: '1rem', backdropFilter: 'blur(4px)' }}
+            style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'rgba(255,255,255,0.85)', fontSize: '0.8125rem', fontWeight: 500, padding: '0.375rem 0.875rem', borderRadius: '8px', cursor: 'pointer', marginBottom: '1rem', backdropFilter: 'blur(4px)', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
           >
-            ← 컬렉션 목록
+            <ArrowLeft size={14} /> 컬렉션 목록
           </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem', flexShrink: 0, backdropFilter: 'blur(4px)' }}>
-              {collection.emoji || '📚'}
+              <Library size={26} color="white" strokeWidth={1.75} />
             </div>
             <div>
               <h1 style={{ color: 'white', fontSize: isMobile ? '1.375rem' : '1.875rem', fontWeight: 700, margin: '0 0 0.375rem 0' }}>
@@ -112,7 +113,7 @@ export default function CollectionDetailPage() {
       <div style={{ maxWidth: '1024px', margin: '0 auto', padding: isMobile ? '1.5rem 1rem' : '2rem 1.5rem' }}>
         {collection.personas.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '4rem 1rem' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🤖</div>
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center', color: c.textMuted }}><Bot size={44} strokeWidth={1.5} /></div>
             <p style={{ color: c.textSecondary, fontSize: '1rem' }}>아직 이 컬렉션에 페르소나가 없어요</p>
           </div>
         ) : (

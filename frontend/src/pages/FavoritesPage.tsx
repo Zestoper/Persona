@@ -6,6 +6,7 @@ import { useIsMobile } from '../hooks/useIsMobile'
 import { useThemeColors } from '../hooks/useThemeColors'
 import PersonaCard, { type PersonaCardData } from '../components/PersonaCard'
 import { SkeletonCard } from '../components/Skeleton'
+import { Heart } from 'lucide-react'
 
 export default function FavoritesPage() {
   const navigate = useNavigate()
@@ -66,7 +67,7 @@ export default function FavoritesPage() {
         {!isLoading && personas.length === 0 && (
           <div style={{ textAlign: 'center', padding: '5rem 1rem' }}>
             <div style={{ width: '64px', height: '64px', background: c.bgSoft, borderRadius: '50%', margin: '0 auto 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: '1.5rem' }}>♡</span>
+              <Heart size={26} color={c.textMuted} strokeWidth={1.75} />
             </div>
             <p style={{ color: c.textSecondary, marginBottom: '1.5rem', fontSize: '0.9375rem' }}>
               아직 즐겨찾기한 캐릭터가 없어요

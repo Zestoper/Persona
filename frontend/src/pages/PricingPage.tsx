@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useThemeColors } from '../hooks/useThemeColors'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useAuth } from '../context/AuthContext'
+import { Check, Minus } from 'lucide-react'
 
 const PLANS = [
   {
@@ -189,11 +190,11 @@ export default function PricingPage() {
                         <span style={{ fontSize: '0.875rem', color: f.value === false ? c.textMuted : c.textSecondary, textDecoration: f.value === false ? 'line-through' : 'none' }}>
                           {f.label}
                         </span>
-                        <span style={{ fontSize: '0.8125rem', fontWeight: 600, flexShrink: 0 }}>
+                        <span style={{ fontSize: '0.8125rem', fontWeight: 600, flexShrink: 0, display: 'inline-flex', alignItems: 'center' }}>
                           {f.value === true
-                            ? <span style={{ color: '#10b981' }}>✓</span>
+                            ? <Check size={16} color="#10b981" strokeWidth={2.5} />
                             : f.value === false
-                            ? <span style={{ color: c.textMuted }}>✗</span>
+                            ? <Minus size={16} color={c.textMuted} />
                             : <span style={{ color: isPro ? '#6366f1' : c.textPrimary }}>{f.value}</span>
                           }
                         </span>
@@ -244,7 +245,7 @@ export default function PricingPage() {
                       return (
                         <td key={plan.id} style={{ padding: '0.875rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: 600 }}>
                           {val === true
-                            ? <span style={{ color: '#10b981', fontSize: '1.125rem' }}>✓</span>
+                            ? <Check size={18} color="#10b981" strokeWidth={2.5} style={{ verticalAlign: 'middle' }} />
                             : val === false || val === undefined
                             ? <span style={{ color: c.textMuted }}>—</span>
                             : <span style={{ color: plan.id === 'pro' ? '#6366f1' : c.textPrimary }}>{val}</span>
