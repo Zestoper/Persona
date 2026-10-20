@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: str = ""
     GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/google/callback"
     FRONTEND_URL: str = "http://localhost:5173"
+
+    # 메일 발송 (비밀번호 재설정) — Brevo API
+    BREVO_API_KEY: str = ""
+    MAIL_FROM: str = ""
     ALLOWED_ORIGINS: str = "http://localhost:5173"
 
     class Config:

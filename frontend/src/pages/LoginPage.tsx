@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import api from '../api/client'
 import { useAuth } from '../context/AuthContext'
@@ -11,6 +11,7 @@ const SERVER_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const notice: string = (useLocation().state as { message?: string } | null)?.message ?? ''
   const { login } = useAuth()
   const c = useThemeColors()
 
@@ -83,6 +84,18 @@ export default function LoginPage() {
                 onBlur={(e) => e.target.style.borderColor = c.borderStrong}
               />
             </div>
+
+            <div style={{ textAlign: 'right', marginTop: '-0.5rem' }}>
+              <Link to="/forgot-password" style={{ fontSize: '0.8125rem', color: c.textSecondary, textDecoration: 'none' }}>
+                비밀번호를 잊으셨나요?
+              </Link>
+            </div>
+
+            {notice && !error && (
+              <div style={{ background: c.isDark ? '#052e16' : '#ecfdf5', border: `1px solid ${c.isDark ? '#166534' : '#a7f3d0'}`, color: c.isDark ? '#86efac' : '#059669', fontSize: '0.875rem', padding: '0.75rem 1rem', borderRadius: '10px' }}>
+                {notice}
+              </div>
+            )}
 
             {error && (
               <div style={{ background: c.isDark ? '#450a0a' : '#fef2f2', border: `1px solid ${c.isDark ? '#7f1d1d' : '#fecaca'}`, color: c.isDark ? '#fca5a5' : '#dc2626', fontSize: '0.875rem', padding: '0.75rem 1rem', borderRadius: '10px' }}>
