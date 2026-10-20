@@ -81,8 +81,8 @@ export default function ResetPasswordPage() {
       )}
 
       <p style={{ textAlign: 'center', marginTop: '1.25rem' }}>
-        <Link to="/login" style={{ color: '#6366f1', fontWeight: 600, textDecoration: 'none', fontSize: '0.875rem' }}>
-          <ArrowLeft size="1em" style={{ verticalAlign: '-0.125em' }} /> 로그인으로 돌아가기
+        <Link to="/login" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', color: '#6366f1', fontWeight: 600, textDecoration: 'none', fontSize: '0.875rem' }}>
+          <ArrowLeft size={16} /> 로그인으로 돌아가기
         </Link>
       </p>
     </AuthCard>
