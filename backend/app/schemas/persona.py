@@ -96,7 +96,8 @@ class PersonaResponse(BaseModel):
     personality: str
     background: str | None
     speech_style: str | None
-    system_prompt: str
+    # 시스템 프롬프트는 만든 사람(과 관리자)에게만 내려준다 — 다른 사람에게는 None
+    system_prompt: str | None = None
     is_public: bool
     chat_count: int
     avatar_url: str | None

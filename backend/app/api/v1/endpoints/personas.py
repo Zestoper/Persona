@@ -121,8 +121,16 @@ async def get_persona(
     """
     특정 페르소나의 상세 정보를 반환합니다.
     비공개 페르소나는 본인만 조회 가능합니다.
+    시스템 프롬프트는 만든 사람과 관리자에게만 보여줍니다 (공개 캐릭터라도 설정 원문 복사 방지).
     """
-    return await persona_service.get_persona_by_id(db, persona_id, current_user)
+    persona = await persona_service.get_persona_by_id(db, persona_id, current_user)
+    d = PersonaResponse.model_validate(persona).model_dump()
+    is_owner = current_user is not None and (
+        current_user.id == persona.user_id or getattr(current_user, "is_admin", False)
+    )
+    if not is_owner:
+        d["system_prompt"] = None
+    return PersonaResponse(**d)
 
 @router.put("/{persona_id}", response_model=PersonaResponse)
 async def update_persona(
