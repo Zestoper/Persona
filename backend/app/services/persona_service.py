@@ -248,6 +248,14 @@ async def fork_persona(
     )
     db.add(new_persona)
     await db.flush()
+
+    # 설정집도 같이 복사
+    from app.models.lore import LoreEntry
+    lore = (await db.execute(select(LoreEntry).where(LoreEntry.persona_id == original.id))).scalars().all()
+    for e in lore:
+        db.add(LoreEntry(persona_id=new_persona.id, title=e.title, keywords=e.keywords,
+                         content=e.content, always_on=e.always_on))
+    await db.flush()
     await db.refresh(new_persona)
     return new_persona
 

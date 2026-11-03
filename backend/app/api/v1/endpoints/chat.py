@@ -7,6 +7,8 @@ from app.models.persona import Persona
 from app.models.user import User
 from app.core.security import get_current_user
 from app.services import chat_service
+from app.models.lore import LoreEntry
+from app.services.lorebook import lore_prompt, select_entries
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
@@ -63,6 +65,11 @@ async def websocket_chat(
 
     history = await chat_service.get_conversation_messages(db, conversation.id)
 
+    # 설정집은 연결할 때 한 번 불러오고 메시지마다 관련 항목만 골라 넣는다
+    lore_entries = list((await db.execute(
+        select(LoreEntry).where(LoreEntry.persona_id == persona.id)
+    )).scalars().all())
+
     await websocket.send_text(json.dumps({
         "type": "connected",
         "conversation_id": conversation.id,
@@ -94,8 +101,12 @@ async def websocket_chat(
 
             full_response = ""
 
+            # 이번 메시지 + 직전 대화 2개 기준으로 관련 설정 항목을 고른다
+            recent = " ".join([m.content for m in history[-2:]] + [user_input])
+            lore_block = lore_prompt(select_entries(lore_entries, recent)) if lore_entries else ""
+
             async for chunk in chat_service.stream_ai_response(
-                system_prompt=persona.system_prompt,
+                system_prompt=persona.system_prompt + lore_block,
                 history=history,
                 user_message=user_input,
             ):

@@ -4,6 +4,7 @@ import api from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { useThemeColors } from '../hooks/useThemeColors'
 import { useToast } from '../context/ToastContext'
+import LorebookSection from '../components/LorebookSection'
 
 const STYLES = [
   { id: 'lorelei',    label: '일러스트' },
@@ -288,6 +289,8 @@ export default function EditPersonaPage() {
             </div>
           </form>
         </div>
+
+        {personaId && <LorebookSection personaId={personaId} />}
       </div>
     </div>
   )
