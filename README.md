@@ -2,6 +2,10 @@
 
 나만의 AI 캐릭터를 만들고, 그 캐릭터와 실시간으로 대화할 수 있는 풀스택 웹 서비스입니다.
 
+**서비스 주소**: https://persona-peach-rho.vercel.app
+
+> 백엔드는 Render 무료 플랜이라 15분 동안 요청이 없으면 잠들고 첫 요청에 30~50초 걸릴 수 있습니다.
+
 ## 스크린샷
 
 | 랜딩 페이지 | 마켓플레이스 |
@@ -214,28 +218,27 @@ docker compose exec db psql -U persona -d persona_db \
   -c "UPDATE users SET is_admin = true WHERE email = '이메일주소';"
 ```
 
-## Railway 배포
+## 배포
 
-Railway는 백엔드와 프론트엔드를 별도 서비스로 배포합니다.
+| 구분 | 플랫폼 | 비고 |
+|---|---|---|
+| 프론트엔드 | Vercel | `frontend/vercel.json`으로 SPA 새로고침 404 방지 · main 브랜치 푸시 시 자동 배포 |
+| 백엔드 | Render (Web Service) | Root Directory `backend` · 시작 명령 `uvicorn app.main:app --host 0.0.0.0 --port $PORT` |
+| DB | Neon PostgreSQL | asyncpg 연결 (아래 트러블슈팅 참고) |
 
-### 1. 백엔드 배포
+### 백엔드 환경변수 (Render)
+- `DATABASE_URL` — Neon 연결 주소
+- `SECRET_KEY` — 랜덤 시크릿 키
+- `GROQ_API_KEY` — Groq API 키
+- `ALLOWED_ORIGINS` — 프론트엔드 배포 URL
+- `DEBUG=False`
 
-1. [Railway](https://railway.app) 프로젝트 생성
-2. GitHub 저장소 연결 → **Root Directory**: `backend`
-3. PostgreSQL 플러그인 추가 → `DATABASE_URL` 자동 설정됨
-4. 환경변수 설정:
-   - `SECRET_KEY` — 랜덤 시크릿 키
-   - `GROQ_API_KEY` — Groq API 키
-   - `ALLOWED_ORIGINS` — 프론트엔드 배포 URL
-   - `DEBUG=False`
+### 프론트엔드 환경변수 (Vercel)
+- `VITE_API_URL` — 백엔드 URL + `/api/v1`
+- `VITE_WS_URL` — `wss://` + 백엔드 도메인 + `/api/v1`
+- `VITE_BACKEND_URL` — 백엔드 URL
 
-### 2. 프론트엔드 배포
-
-1. Railway 새 서비스 추가 → **Root Directory**: `frontend`
-2. 빌드 환경변수 설정:
-   - `VITE_API_URL` — 백엔드 Railway URL + `/api/v1`
-   - `VITE_WS_URL` — `wss://` + 백엔드 Railway 도메인 + `/api/v1`
-   - `VITE_BACKEND_URL` — 백엔드 Railway URL
+> 저장소의 `railway.json` · `docker-compose.yml`은 다른 환경에 올릴 때 쓰는 설정입니다. 실제 서비스는 위 Vercel + Render + Neon 조합으로 운영합니다.
 
 ## 트러블슈팅
 
