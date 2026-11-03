@@ -6,5 +6,6 @@ from app.models.report import Report
 from app.models.favorite import Favorite
 from app.models.collection import Collection, CollectionPersona
 from app.models.password_reset import PasswordReset
+from app.models.lore import LoreEntry
 
-__all__ = ["User", "Persona", "Conversation", "Message", "Report", "Favorite", "Collection", "CollectionPersona", "PasswordReset"]
+__all__ = ["User", "Persona", "Conversation", "Message", "Report", "Favorite", "Collection", "CollectionPersona", "PasswordReset", "LoreEntry"]
