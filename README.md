@@ -1,13 +1,11 @@
 # Persona — AI 페르소나 챗봇 빌더
-## 시연 영상
+나만의 AI 캐릭터를 만들고 그 캐릭터와 실시간으로 대화할 수 있는 풀스택 웹 서비스입니다.
 
+## 시연 영상
 https://github.com/user-attachments/assets/b0226802-2a45-4306-920b-298deb094659
 
-나만의 AI 캐릭터를 만들고, 그 캐릭터와 실시간으로 대화할 수 있는 풀스택 웹 서비스입니다.
-
-**서비스 주소**: https://persona-peach-rho.vercel.app
-
-> 백엔드는 Render 무료 플랜이라 15분 동안 요청이 없으면 잠들고 첫 요청에 30~50초 걸릴 수 있습니다.
+**서비스**: https://persona-peach-rho.vercel.app
+> 백엔드는 Render 무료 플랜이라 처음 접속 시 서버가 깨어나는 데 최대 1분 정도 걸립니다.
 
 ## 스크린샷
 
