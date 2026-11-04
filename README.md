@@ -1,4 +1,6 @@
 # Persona — AI 페르소나 챗봇 빌더
+## 시연 영상
+https://github.com/user-attachments/assets/9dbe0e2c-3259-42ba-b236-06935f3c7e60
 
 나만의 AI 캐릭터를 만들고, 그 캐릭터와 실시간으로 대화할 수 있는 풀스택 웹 서비스입니다.
 
