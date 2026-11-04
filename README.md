@@ -7,6 +7,8 @@ https://github.com/user-attachments/assets/b0226802-2a45-4306-920b-298deb094659
 **서비스**: https://persona-peach-rho.vercel.app
 > 백엔드는 Render 무료 플랜이라 처음 접속 시 서버가 깨어나는 데 최대 1분 정도 걸립니다.
 
+---
+
 ## 스크린샷
 
 | 랜딩 페이지 | 마켓플레이스 |
