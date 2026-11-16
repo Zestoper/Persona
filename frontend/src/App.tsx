@@ -18,7 +18,7 @@ import PersonaDetailPage from './pages/PersonaDetailPage'
 import ConversationsPage from './pages/ConversationsPage'
 import AdminPage from './pages/AdminPage'
 import PricingPage from './pages/PricingPage'
-import AuthCallbackPage from './pages/AuthCallbackPage'
+import OAuthCallbackPage from './pages/OAuthCallbackPage'
 import FavoritesPage from './pages/FavoritesPage'
 import CollectionsPage from './pages/CollectionsPage'
 import CollectionDetailPage from './pages/CollectionDetailPage'
@@ -71,7 +71,7 @@ function AppRoutes() {
         <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
         <Route path="/admin" element={<PrivateRoute><AdminPage /></PrivateRoute>} />
         <Route path="/pricing" element={<PricingPage />} />
-        <Route path="/auth/callback" element={<AuthCallbackPage />} />
+        <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </>

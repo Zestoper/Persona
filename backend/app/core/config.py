@@ -18,12 +18,18 @@ class Settings(BaseSettings):
     GROQ_API_KEY: str
     CEREBRAS_API_KEY: str = ""
 
-    KAKAO_CLIENT_ID: str = ""
-    KAKAO_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/kakao/callback"
+    # 소셜 로그인 (구글 · 카카오) — app/api/v1/endpoints/oauth.py
+    BACKEND_URL: str = ""            # 이 서버 주소. 비우면 Render 주소 → http://localhost:8000 순으로 잡는다
+    FRONTEND_URL: str = "http://localhost:5173"
     GOOGLE_CLIENT_ID: str = ""
     GOOGLE_CLIENT_SECRET: str = ""
-    GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/google/callback"
-    FRONTEND_URL: str = "http://localhost:5173"
+    KAKAO_REST_API_KEY: str = ""
+    KAKAO_CLIENT_SECRET: str = ""    # 카카오 콘솔에서 Client Secret 을 '사용'으로 켰을 때만
+    # 아래 3개는 예전 소셜 로그인 설정 — 이제 쓰지 않는다 (콜백 주소는 BACKEND_URL 로 만든다).
+    # .env 에 남아 있어도 서버가 뜨도록 자리만 둔다. KAKAO_CLIENT_ID 는 KAKAO_REST_API_KEY 가 비었을 때만 대신 쓴다.
+    KAKAO_CLIENT_ID: str = ""
+    KAKAO_REDIRECT_URI: str = ""
+    GOOGLE_REDIRECT_URI: str = ""
 
     # 메일 발송 (비밀번호 재설정) — Brevo API
     BREVO_API_KEY: str = ""
