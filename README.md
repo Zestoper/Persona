@@ -36,7 +36,7 @@ https://github.com/user-attachments/assets/b0226802-2a45-4306-920b-298deb094659
 | 컬렉션 | 테마별로 큐레이션된 페르소나 묶음 (힐링·학습·건강·연애 등 19개+) |
 | AI 자동 컬렉션 분류 | 공개 페르소나 생성 시 Groq AI가 어울리는 컬렉션에 자동 추가 |
 | 페르소나 복사 | 공개 페르소나를 내 계정으로 포크(복사)하여 커스터마이징 |
-| 소셜 로그인 | 카카오·구글 OAuth2 소셜 로그인 지원 |
+| 소셜 로그인 | 카카오·구글 계정으로 바로 가입·로그인 / 인증된 같은 이메일의 기존 계정은 자동 연결 |
 | 아바타 시스템 | DiceBear 자동 생성 (7가지 스타일) 또는 직접 이미지 업로드 |
 | 즐겨찾기 | 마음에 드는 공개 페르소나를 즐겨찾기에 저장 |
 | 신고 기능 | 부적절한 페르소나 신고 및 관리자 처리 |
@@ -169,16 +169,19 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 GROQ_API_KEY=gsk_로_시작하는_Groq_API_키
 DEBUG=True
 
-# 소셜 로그인 (선택)
-KAKAO_CLIENT_ID=카카오_REST_API_키
-KAKAO_REDIRECT_URI=http://localhost:8000/api/v1/auth/kakao/callback
+# 소셜 로그인 (선택 — 비워두면 해당 버튼만 비활성화)
+#   콜백 주소는 {BACKEND_URL}/api/v1/auth/{kakao|google}/callback 로 서버가 만든다
+BACKEND_URL=http://localhost:8000
+FRONTEND_URL=http://localhost:5173
+KAKAO_REST_API_KEY=카카오_REST_API_키
+KAKAO_CLIENT_SECRET=                 # 카카오 콘솔에서 Client Secret 을 켰을 때만
 GOOGLE_CLIENT_ID=구글_클라이언트_ID
 GOOGLE_CLIENT_SECRET=구글_클라이언트_시크릿
 ```
 
 > **Groq API 키**: [console.groq.com](https://console.groq.com) → 무료 회원가입 후 발급  
-> **카카오 로그인**: [developers.kakao.com](https://developers.kakao.com) → 앱 생성 → REST API 키  
-> **구글 로그인**: [console.cloud.google.com](https://console.cloud.google.com) → OAuth 2.0 클라이언트 ID
+> **카카오 로그인**: [developers.kakao.com](https://developers.kakao.com) → 앱 생성 → REST API 키 · 카카오 로그인 활성화 · Redirect URI `{BACKEND_URL}/api/v1/auth/kakao/callback` 등록  
+> **구글 로그인**: [console.cloud.google.com](https://console.cloud.google.com) → OAuth 2.0 클라이언트 ID(웹 애플리케이션) · 리디렉션 URI `{BACKEND_URL}/api/v1/auth/google/callback` 등록
 
 ### Docker로 PostgreSQL 실행
 
@@ -235,6 +238,8 @@ docker compose exec db psql -U persona -d persona_db \
 - `GROQ_API_KEY` — Groq API 키
 - `ALLOWED_ORIGINS` — 프론트엔드 배포 URL
 - `DEBUG=False`
+- `BACKEND_URL` · `FRONTEND_URL` — 소셜 로그인 콜백 · 로그인 후 돌아갈 주소
+- `KAKAO_REST_API_KEY` · `KAKAO_CLIENT_SECRET` · `GOOGLE_CLIENT_ID` · `GOOGLE_CLIENT_SECRET` — 소셜 로그인 (선택)
 
 ### 프론트엔드 환경변수 (Vercel)
 - `VITE_API_URL` — 백엔드 URL + `/api/v1`
